@@ -27,9 +27,20 @@ $(eval $(call gb_Helper_register_repository,SRCDIR))
 $(eval $(call gb_Helper_register_executables,NONE, \
 	bmp \
 	bmpsum \
+	checksingleton \
 	g2g \
+	gencoll_rule \
+	genconv_dict \
+	gendict \
+	genindex_data \
 	mkunroll \
+	rdbedit \
+	rdbmaker \
+	rsc \
+	rsc2 \
 	rscdep \
+	rscpp \
+	saxparser \
 	so_checksum \
 	srvdepy \
 	svidl \
@@ -38,15 +49,38 @@ $(eval $(call gb_Helper_register_executables,NONE, \
 ))
 
 $(eval $(call gb_Helper_register_executables,OOO, \
-    spadmin.bin \
+	regsingleton \
+	sp2bv \
+	spadmin.bin \
+))
+
+$(eval $(call gb_Helper_register_executables,SDK, \
+	autodoc \
+	cppumaker \
+	idlc \
+	javamaker \
+	regcompare \
+	uno-skeletonmaker \
+))
+
+$(eval $(call gb_Helper_register_executables,UREBIN, \
+	javaldx \
+	regcomp \
+	regmerge \
+	regview \
+	uno \
 ))
 
 $(eval $(call gb_Helper_register_libraries,OOOLIBS, \
-    AppleRemote \
+	AppleRemote \
+	MacOSXSpell \
+	acc \
 	adabas \
 	adabasui \
 	agg \
+	analysis \
 	animcore \
+	apple_remote \
 	avmedia \
 	avmediagst \
 	avmediaMacAVF \
@@ -57,17 +91,21 @@ $(eval $(call gb_Helper_register_libraries,OOOLIBS, \
 	basegfx \
 	cached1 \
 	canvastools \
+	collator_data \
 	communi \
 	cppcanvas \
 	ctl \
 	cui \
+	date \
 	dba \
 	dbaxml \
 	dbmm \
 	dbui \
 	dbpool \
 	dbtools \
-    desktop_detector \
+	desktop_detector \
+	dict_ja \
+	dict_zh \
 	dnd \
 	drawinglayer \
 	dtrans \
@@ -88,10 +126,17 @@ $(eval $(call gb_Helper_register_libraries,OOOLIBS, \
 	fwk \
 	fwl \
 	fwm \
-    i18npaper \
+	guesslang \
+	i18npaper \
+	index_data \
+	java_uno_accessbridge \
 	juh \
 	juhx \
 	lng \
+	localedata_en \
+	localedata_es \
+	localedata_euro \
+	localedata_others \
 	mcnttype \
 	msfilter \
 	msword \
@@ -99,6 +144,8 @@ $(eval $(call gb_Helper_register_libraries,OOOLIBS, \
 	odbcbase \
 	oox \
 	package2 \
+	pyuno \
+	pyuno_loader \
 	qstart_gtk \
 	rpt \
 	rptui \
@@ -135,7 +182,10 @@ $(eval $(call gb_Helper_register_libraries,OOOLIBS, \
 	sysdtrans \
 	textconversiondlgs \
 	ootk \
+	textconv_dict \
 	tl \
+	tvhlp1 \
+	ucpchelp1 \
 	utl \
 	unordf \
 	unoxml \
@@ -148,11 +198,11 @@ $(eval $(call gb_Helper_register_libraries,OOOLIBS, \
 	ucphier1 \
 	ucppkg1 \
 	vcl \
-    vclplug_gen \
-    vclplug_gtk \
-    vclplug_kde \
-    vclplug_kde4 \
-    vclplug_svp \
+	vclplug_gen \
+	vclplug_gtk \
+	vclplug_kde \
+	vclplug_kde4 \
+	vclplug_svp \
 	uui \
 	xcr \
 	xo \
@@ -161,10 +211,20 @@ $(eval $(call gb_Helper_register_libraries,OOOLIBS, \
 ))
 
 $(eval $(call gb_Helper_register_libraries,PLAINLIBS_URE, \
+	gcc3_uno \
+	java_uno \
+	jpipe \
+	jpipx \
+	msci_uno \
+	mscx_uno \
+	s5abi_uno \
+	sunjavaplugin \
+	sunpro5_uno \
 	xmlreader \
 ))
 
 $(eval $(call gb_Helper_register_libraries,PLAINLIBS_OOO, \
+	officebean \
 ))
 
 
@@ -172,13 +232,13 @@ $(eval $(call gb_Helper_register_libraries,RTLIBS, \
 	comphelper \
 	i18nisolang1 \
 	i18nutil \
-    jvmaccess \
 	ucbhelper \
 	vos3 \
 ))
 
 $(eval $(call gb_Helper_register_libraries,RTVERLIBS, \
 	cppuhelper \
+	jvmaccess \
 	salhelper \
 ))
 
@@ -206,15 +266,21 @@ $(eval $(call gb_Helper_register_libraries,UNOLIBS_OOO, \
 	fsstorage \
 	gdipluscanvas \
 	hatchwindowfactory \
+	hyphen_uno \
+	i18npool \
+	i18nsearch \
+	lnth \
 	nullcanvas \
 	passwordcontainer \
+	pythonloader \
 	simplecanvas \
 	slideshow \
+	spell \
 	streams \
 	textinstream \
 	textoutstream \
 	vbaswobj \
-    msforms \
+	msforms \
 	vclcanvas \
 	ucpext \
 	ucpexpand1 \
@@ -230,16 +296,24 @@ $(eval $(call gb_Helper_register_libraries,UNOLIBS_OOO, \
 $(eval $(call gb_Helper_register_libraries,UNOVERLIBS, \
 	cppu \
 	jvmfwk \
+	reg \
 	sal \
+	store \
 ))
 
 $(eval $(call gb_Helper_register_static_libraries,PLAINLIBS, \
 	basegfx_s \
+	codemaker \
+	commoncpp \
+	commonjava \
+	cosv \
 	ooopathutils \
 	salcpprt \
+	sample \
 	sldshw_s \
-    vclmain \
+	vclmain \
 	udm \
+	ulingu \
 ))
 
 # vim: set noet sw=4 ts=4:

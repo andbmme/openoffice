@@ -113,8 +113,17 @@ static void setPythonHome ( const OUString & pythonHome )
     OUString systemPythonHome;
     osl_getSystemPathFromFileURL( pythonHome.pData, &(systemPythonHome.pData) );
     OString o = rtl::OUStringToOString( systemPythonHome, osl_getThreadTextEncoding() );
+#if PY_MAJOR_VERSION < 3 || PY_MAJOR_VERSION == 3 && PY_MINOR_VERSION <= 4
     rtl_string_acquire(o.pData); // leak this string (thats the api!)
     Py_SetPythonHome( o.pData->buffer);
+#else
+    static wchar_t *wpath = Py_DecodeLocale(o.pData->buffer, NULL);
+    if (wpath == NULL) {
+        PyErr_SetString(PyExc_SystemError, "Cannot decode python home path");
+        return;
+    }
+    Py_SetPythonHome(wpath);
+#endif
 }
 
 static void prependPythonPath( const OUString & pythonPathBootstrap )
@@ -219,13 +228,13 @@ extern "C"
 {
 
 //==================================================================================================
-void SAL_CALL component_getImplementationEnvironment(
+SAL_DLLPUBLIC_EXPORT void SAL_CALL component_getImplementationEnvironment(
 	const sal_Char ** ppEnvTypeName, uno_Environment ** )
 {
 	*ppEnvTypeName = CPPU_CURRENT_LANGUAGE_BINDING_NAME;
 }
 //==================================================================================================
-void * SAL_CALL component_getFactory(
+SAL_DLLPUBLIC_EXPORT void * SAL_CALL component_getFactory(
 	const sal_Char * pImplName, void * pServiceManager, void * pRegistryKey )
 {
 	return cppu::component_getFactoryHelper( pImplName, pServiceManager, pRegistryKey , g_entries );

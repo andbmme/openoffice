@@ -27,15 +27,16 @@ TARGET=cppuhelper
 
 ENABLE_EXCEPTIONS=TRUE
 USE_DEFFILE=TRUE
+VISIBILITY_HIDDEN=TRUE
 
 # not strictly a bootstrap service but containing
 # bootstrap code that may require generated files
 # without "-L" (light) switch
 BOOTSTRAP_SERVICE=TRUE
 
-.IF "$(OS)" != "WNT" && "$(GUI)"!="OS2"
+.IF "$(OS)" != "WNT" && "$(GUI)"!="OS2" && "$(OS)" != "MACOSX"
 UNIXVERSIONNAMES=UDK
-.ENDIF # WNT
+.ENDIF # WNT OS2 MACOSX
 
 # --- Settings -----------------------------------------------------
 
@@ -121,6 +122,8 @@ CFLAGS += -Ob0
 .ENDIF
 .ENDIF
 
+CFLAGS += -DCPPUHELPER_DLLIMPLEMENTATION
+
 SLOFILES= \
 		$(SLO)$/typeprovider.obj 	\
 		$(SLO)$/exc_thrower.obj 	\
@@ -173,7 +176,7 @@ SHL1DEF=$(MISC)$/$(SHL1TARGET).def
 DEF1NAME=$(SHL1TARGET)
 
 .IF "$(COMNAME)"=="msci"
-SHL1VERSIONMAP=msvc_win32_intel.map
+.ELIF "$(COMNAME)"=="mscx"
 .ELIF "$(COMNAME)"=="sunpro5"
 SHL1VERSIONMAP=cc5_solaris_sparc.map
 .ELIF "$(GUI)$(COMNAME)"=="OS2gcc3"

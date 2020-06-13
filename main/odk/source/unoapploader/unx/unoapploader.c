@@ -206,6 +206,31 @@ int main( int argc, char *argv[] )
             strcat( envstr, value );
 		}
         putenv( envstr );
+#ifdef MACOSX
+        /* https://bz.apache.org/ooo/show_bug.cgi?id=127965 */
+        value = getenv( "PATH" );
+        if (!strstr ( value, "/usr/local/bin" )) {
+            size = strlen( "PATH" ) + strlen( "=/usr/local/bin" ) + 1;
+            if ( value != NULL )
+                size += strlen( PATHSEPARATOR ) + strlen( value );
+            envstr = (char*) malloc( size );
+            strcpy( envstr, "PATH=" );
+            if ( value != NULL ) {
+                strcat( envstr, value);
+                strcat( envstr, PATHSEPARATOR);
+            }
+            strcat( envstr, "/usr/local/bin" ); /* We are adding at the end */
+            putenv( envstr );
+        }
+
+        /* https://bz.apache.org/ooo/show_bug.cgi?id=127966 */
+        value = getenv ( "HOME" );
+        if ( value && *value ) {
+          chdir ( value );
+        } else {
+            chdir ( "/tmp" );
+        }
+#endif
     }
     else
     {

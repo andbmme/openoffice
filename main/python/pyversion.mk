@@ -22,25 +22,25 @@
 # in the python project accordingly !!!
 PYMAJOR=2
 PYMINOR=7
-PYMICRO=14
+PYMICRO=17
 PYVERSION=$(PYMAJOR).$(PYMINOR).$(PYMICRO)
 
-.IF "$(GUI)" == "UNX"
-.IF "$(OS)" == "MACOSX"
+ifeq ($(GUI),UNX)
+ifeq ($(OS),MACOSX)
 PY_FULL_DLL_NAME=libpython$(PYMAJOR).$(PYMINOR).dylib
-.ELSE
+else
 PY_FULL_DLL_NAME=libpython$(PYMAJOR).$(PYMINOR).so.1.0
-.ENDIF
+endif
 PYTHONLIB=-lpython$(PYMAJOR).$(PYMINOR)
-.ELIF "$(GUI)" == "OS2"
+else ifeq ($(GUI),OS2)
 PY_FULL_DLL_NAME=python$(PYMAJOR)$(PYMINOR).dll
 PYTHONLIB=python$(PYMAJOR)$(PYMINOR).lib
-.ELSE
-.IF "$(COM)" == "GCC"
+else
+ifeq ($(COM),GCC)
 PY_FULL_DLL_NAME=libpython$(PYMAJOR).$(PYMINOR).dll
 PYTHONLIB=-lpython$(PYMAJOR).$(PYMINOR)
-.ELSE
+else
 PY_FULL_DLL_NAME=python$(PYMAJOR)$(PYMINOR).dll
 PYTHONLIB=python$(PYMAJOR)$(PYMINOR).lib
-.ENDIF
-.ENDIF
+endif
+endif

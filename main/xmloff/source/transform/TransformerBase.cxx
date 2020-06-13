@@ -183,7 +183,7 @@ XMLTransformerContext *XMLTransformerBase::CreateContext( sal_uInt16 nPrefix,
 			return new XMLMergeElemTransformerContext( *this, rQName,
 				   	static_cast< sal_uInt16 >( (*aIter).second.m_nParam1 ) );
 		default:
-			OSL_ENSURE( !this, "unknown action" );
+			OSL_ENSURE( sal_False, "unknown action" );
 			break;
 		}
 	}
@@ -271,7 +271,7 @@ void SAL_CALL XMLTransformerBase::startElement( const OUString& rName,
                                  : rAttrName.copy( 6 ) );
 			// Add namespace, but only if it is known.
 			sal_uInt16 nKey = m_pNamespaceMap->AddIfKnown( aPrefix, rAttrValue );
-			// If namespace is unknwon, try to match a name with similar
+			// If namespace is unknown, try to match a name with similar
 			// TC Id an version
             if( XML_NAMESPACE_UNKNOWN == nKey  )
 			{
@@ -896,7 +896,7 @@ XMLMutableAttributeList *XMLTransformerBase::ProcessAttrList(
 				}
 
 				default:
-					OSL_ENSURE( !this, "unknown action" );
+					OSL_ENSURE( sal_False, "unknown action" );
 					break;
 				}
 

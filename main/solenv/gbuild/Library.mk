@@ -1,5 +1,5 @@
 #**************************************************************
-#  
+#
 #  Licensed to the Apache Software Foundation (ASF) under one
 #  or more contributor license agreements.  See the NOTICE file
 #  distributed with this work for additional information
@@ -7,18 +7,17 @@
 #  to you under the Apache License, Version 2.0 (the
 #  "License"); you may not use this file except in compliance
 #  with the License.  You may obtain a copy of the License at
-#  
+#
 #    http://www.apache.org/licenses/LICENSE-2.0
-#  
+#
 #  Unless required by applicable law or agreed to in writing,
 #  software distributed under the License is distributed on an
 #  "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 #  KIND, either express or implied.  See the License for the
 #  specific language governing permissions and limitations
 #  under the License.
-#  
+#
 #**************************************************************
-
 
 
 
@@ -37,15 +36,15 @@
 
 gb_Library__get_linktargetname = Library/$(call gb_Library_get_filename,$(1))
 
-# EVIL: gb_StaticLibrary and gb_Library need the same deliver rule because they are indistinguishable on windows
+# EVIL: gb_StaticLibrary and gb_Library need the same deliver rule because they are indistinguishable on Windows
 .PHONY : $(WORKDIR)/Clean/OutDir/lib/%$(gb_Library_PLAINEXT)
 $(WORKDIR)/Clean/OutDir/lib/%$(gb_Library_PLAINEXT) :
 	$(call gb_Helper_abbreviate_dirs,\
 		rm -f $(OUTDIR)/lib/$*$(gb_Library_PLAINEXT) \
 			$(AUXTARGETS))
 
-# EVIL: gb_StaticLibrary and gb_Library need the same deliver rule because they are indistinguishable on windows
-$(gb_Library_OUTDIRLOCATION)/%$(gb_Library_PLAINEXT) : 
+# EVIL: gb_StaticLibrary and gb_Library need the same deliver rule because they are indistinguishable on Windows
+$(gb_Library_OUTDIRLOCATION)/%$(gb_Library_PLAINEXT) :
 	$(call gb_Helper_abbreviate_dirs,\
 		$(call gb_Deliver_deliver,$<,$@) \
 			$(foreach target,$(AUXTARGETS), && $(call gb_Deliver_deliver,$(dir $<)/$(notdir $(target)),$(target))))
@@ -83,38 +82,52 @@ $(call gb_Library_get_clean_target,$(1)) : $(call gb_ComponentTarget_get_clean_t
 endef
 
 gb_Library__get_componentprefix = \
-    $(call gb_Library__get_layer_componentprefix,$(call \
-        gb_Library_get_layer,$(1)))
+	$(call gb_Library__get_layer_componentprefix,$(call \
+		gb_Library_get_layer,$(1)))
 
 gb_Library__get_layer_componentprefix = \
-    $(patsubst $(1):%,%,$(or \
-        $(filter $(1):%,$(gb_Library_COMPONENTPREFIXES)), \
-        $(call gb_Output_error,no ComponentTarget native prefix for layer '$(1)')))
+	$(patsubst $(1):%,%,$(or \
+		$(filter $(1):%,$(gb_Library_COMPONENTPREFIXES)), \
+		$(call gb_Output_error,no ComponentTarget native prefix for layer '$(1)')))
 
 
 define gb_Library__forward_to_Linktarget
-gb_Library_$(1) = $$(call gb_LinkTarget_$(1),$$(call gb_Library__get_linktargetname,$$(1)),$$(2),$$(3))
+gb_Library_$(1) = $$(call gb_LinkTarget_$(1),$$(call gb_Library__get_linktargetname,$$(1)),$$(2),$$(3),$$(4))
 
 endef
 
 gb_Library_get_runtime_filename = \
  $(or $(call gb_Library_get_dllname,$(1)),$(call gb_Library_get_filename,$(1)))
 
+define gb_Library_is_udk_versioned
+$(or \
+	$(filter $(patsubst %:$(notdir $(1)),%,$(filter %:$(notdir $(1)),$(gb_Library_FILENAMES))),$(gb_Library_RTVERLIBS)),\
+	$(filter $(patsubst %:$(notdir $(1)),%,$(filter %:$(notdir $(1)),$(gb_Library_FILENAMES))),$(gb_Library_UNOVERLIBS)))
+endef
+
 $(eval $(foreach method,\
+	add_asmobject \
+	add_asmobjects \
 	add_cobject \
 	add_cobjects \
 	add_cxxobject \
 	add_cxxobjects \
+	add_objcobject \
+	add_objcobjects \
 	add_objcxxobject \
 	add_objcxxobjects \
 	add_exception_objects \
 	add_noexception_objects \
+	add_generated_cobject \
+	add_generated_cobjects \
 	add_generated_exception_objects \
 	set_yaccflags \
 	add_cflags \
 	set_cflags \
 	add_cxxflags \
 	set_cxxflags \
+	add_objcflags \
+	set_objcflags \
 	add_objcxxflags \
 	set_objcxxflags \
 	add_defs \
@@ -133,6 +146,9 @@ $(eval $(foreach method,\
 	add_package_headers \
 	add_sdi_headers \
 	add_precompiled_header \
+	set_versionmap \
+	set_private_api \
+	set_private_extract_of_public_api \
 ,\
 	$(call gb_Library__forward_to_Linktarget,$(method))\
 ))

@@ -362,7 +362,7 @@ void Window::ImplInitAppFontData( Window* pWindow )
     // platforms
     if( pSVData->maNWFData.mbNoFocusRects )
     {
-        // try to find out wether there is a large correction
+        // try to find out whether there is a large correction
         // of control sizes, if yes, make app font scalings larger
         // so dialog positioning is not completely off
         ImplControlValue aControlValue;
@@ -630,7 +630,7 @@ void Window::ImplUpdateGlobalSettings( AllSettings& rSettings, sal_Bool bCallHdl
         sal_Bool bTmp = sal_False, bAutoHCMode = sal_True;
         utl::OConfigurationNode aNode = utl::OConfigurationTreeRoot::tryCreateWithServiceFactory(
             vcl::unohelper::GetMultiServiceFactory(),
-            OUString::createFromAscii( "org.openoffice.Office.Common/Accessibility" ) );    // note: case sensisitive !
+            OUString::createFromAscii( "org.openoffice.Office.Common/Accessibility" ) );    // note: case sensitive !
         if ( aNode.isValid() )
         {
             ::com::sun::star::uno::Any aValue = aNode.getNodeValue( OUString::createFromAscii( "AutoDetectSystemHC" ) );
@@ -8611,7 +8611,7 @@ uno::Reference< XDragSource > Window::GetDragSource()
                     {
                         Sequence< Any > aDragSourceAL( 2 ), aDropTargetAL( 2 );
                         OUString aDragSourceSN, aDropTargetSN;
-#if defined WNT
+#if defined WNT || defined OS2
                         aDragSourceSN = OUString::createFromAscii( "com.sun.star.datatransfer.dnd.OleDragSource" );
                         aDropTargetSN = OUString::createFromAscii( "com.sun.star.datatransfer.dnd.OleDropTarget" );
                         aDragSourceAL[ 1 ] = makeAny( (sal_uInt32) pEnvData->hWnd );

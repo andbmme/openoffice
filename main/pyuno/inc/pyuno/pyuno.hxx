@@ -68,11 +68,7 @@
    to do the necessary conversions.
 */
 
-#ifdef WIN32
-#define PY_DLLEXPORT __declspec(dllexport) 
-#else
-#define PY_DLLEXPORT
-#endif
+#define PY_DLLEXPORT SAL_DLLPUBLIC_EXPORT
 
 /** function called by the python runtime to initialize the
     pyuno module.
@@ -80,7 +76,11 @@
     preconditions: python has been initialized before and
                    the global interpreter lock is held 
 */
+#if PY_MAJOR_VERSION >= 3
+PY_DLLEXPORT PyMODINIT_FUNC PyInit_pyuno();
+#else
 extern "C" PY_DLLEXPORT void SAL_CALL initpyuno();
+#endif
 
 
 namespace pyuno
@@ -88,7 +88,7 @@ namespace pyuno
 
 /** Helper class for keeping references to python objects.
     BEWARE: Look up every python function you use to check
-    wether you get an acquired or not acquired object pointer
+    whether you get an acquired or not acquired object pointer
     (python terminus for a not acquired object pointer
     is 'borrowed reference'). Use in the acquired pointer cases the
     PyRef( pointer, SAL_NO_ACQUIRE) ctor.

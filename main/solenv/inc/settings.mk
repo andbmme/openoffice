@@ -878,7 +878,7 @@ UNOIDLDEPFLAGS=-Mdepend=$(SOLARVER)
 
 UNOIDLINC+=-I. -I.. -I$(PRJ) -I$(PRJ)/inc -I$(PRJ)/$(INPATH)/idl -I$(OUT)/inc -I$(SOLARIDLDIR) -I$(SOLARINCDIR)
 
-CDEFS= -D$(OS) -D$(GUI) -D$(GVER) -D$(COM) -D$(CVER) -D$(CPUNAME)
+CDEFS= -D$(OS) -D$(GUI) -D$(GVER) -D$(COM) -D$(CVER) -D$(ALIGN) -D$(CPUNAME) -DCPPU_ENV=$(COMNAME)
 
 .IF "$(USE_STLP_DEBUG)" != "" && "$(GUI)"!="OS2"
 CDEFS+=-D_STLP_DEBUG
@@ -890,6 +890,11 @@ CDEFS+=$(CDEFS_PRESET)
 
 .IF "$(TIMELOG)" != ""
 CDEFS+=-DTIMELOG
+.ENDIF
+
+# Required for correct Windows function call ABI for expat static library
+.IF "$(SYSTEM_EXPAT)"=="NO"
+CDEFS+=-DXML_STATIC
 .ENDIF
 
 CDEFSCXX=
@@ -1068,22 +1073,11 @@ SCPLINK=$(PERL) $(SOLARENV)/bin/par2script.pl
 LZIP*=lzip
 CPPLCC*=$(AUGMENT_LIBRARY_PATH) $(SOLARBINDIR)/cpplcc
 
-.IF "$(DISABLE_ENHANCED_COMID)"==""
-.INCLUDE : tg_compv.mk
-.ELSE          # "$(DISABLE_ENHANCED_COMID)"==""
-COMID=$(COM)
-.ENDIF          # "$(DISABLE_ENHANCED_COMID)"==""
 .IF "$(SOLAR_JAVA)"=="TRUE"
 .IF "$(USE_JAVAVER)"!=""
 .INCLUDE : tg_javav.mk
 .ENDIF "$(USE_JAVAVER)"!=""
 .ENDIF			# "$(SOLAR_JAVA)"=="TRUE"
-
-.IF "$(COM)"=="GCC"
-GXX_INCLUDE_PATH*:=$(COMPATH)/include/c++/$(CCVER)
-.EXPORT : GXX_INCLUDE_PATH
-CDEFS+= -DGXX_INCLUDE_PATH=$(GXX_INCLUDE_PATH)
-.ENDIF
 
 # --- extend new environment ----------------------------------
 CDEFS+= -DSUPD=$(UPD)

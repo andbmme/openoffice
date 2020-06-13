@@ -22,10 +22,8 @@
 
 
 GUI := UNX
-COM := S5ABI
-COMID := s5abi
 #COM := S5ABI
-#COMID := s5abi
+COMID := s5abi
 
 # Darwin mktemp -t expects a prefix, not a pattern
 gb_MKTEMP ?= /usr/bin/mktemp -t gbuild.
@@ -59,15 +57,13 @@ gb_OSDEFS := \
 gb_COMPILERDEFS := \
 	-D$(COM) \
 	-DHAVE_GCC_VISIBILITY_FEATURE \
-	-DCPPU_ENV=$(COMID) \
-	-DGXX_INCLUDE_PATH=$(GXX_INCLUDE_PATH) \
+	-DCPPU_ENV=$(COMNAME) \
 
+gb_CPUDEFS := -D$(ALIGN) -D$(CPUNAME)
 ifeq ($(CPUNAME),POWERPC)
-gb_CPUDEFS := -DPOWERPC -DPPC
+gb_CPUDEFS += -DPOWERPC -DPPC
 else ifeq ($(CPUNAME),INTEL)
-gb_CPUDEFS := -DX86
-else ifeq ($(CPUNAME),X86_64)
-gb_CPUDEFS := -DX86_64
+gb_CPUDEFS += -DX86
 endif
 
 ifeq ($(strip $(SYSBASE)),)
@@ -107,8 +103,14 @@ ifneq ($(COM),GCC)
 	gb_CXXFLAGS += -DHAVE_STL_INCLUDE_PATH -I../v1/
 endif
 
+ifeq ($(MACOSX_DEPLOYMENT_TARGET),$(filter $(MACOSX_DEPLOYMENT_TARGET), 10.7 10.8))
+	gb_CXXFLAGS += -std=c++11 -stdlib=libc++
+	gb_macos_LDFLAGS := -std=c++11 -stdlib=libc++
+endif
+
 # these are to get g++ to switch to Objective-C++ mode
 # (see toolkit module for a case where it is necessary to do it this way)
+gb_OBJCFLAGS := -x objective-c -fobjc-exceptions
 gb_OBJCXXFLAGS := -x objective-c++ -fobjc-exceptions
 
 ifneq ($(MACOSX_DEPLOYMENT_TARGET),)
@@ -145,8 +147,10 @@ endif
 
 ifeq ($(gb_DEBUGLEVEL),2)
 gb_COMPILEROPTFLAGS := -O0
+gb_COMPILEROPT1FLAGS := -O0
 else
 gb_COMPILEROPTFLAGS := -O2
+gb_COMPILEROPT1FLAGS := -O1
 endif
 
 gb_COMPILERNOOPTFLAGS := -O0
@@ -170,6 +174,25 @@ $(1)
 endef
 
 
+# AsmObject class
+
+gb_AsmObject_EXT := .s
+
+define gb_AsmObject__command
+$(call gb_Output_announce,$(2),$(true),ASM,3)
+$(call gb_Helper_abbreviate_dirs,\
+	mkdir -p $(dir $(1)) && \
+	$(gb_CC) \
+		$(DEFS) \
+		$(T_CFLAGS) \
+		$(CFLAGS) \
+		-c $(3) \
+		-o $(1) \
+		-MT $(1) \
+		-I$(dir $(3)) \
+		$(INCLUDE))
+endef
+
 # CObject class
 
 define gb_CObject__command
@@ -179,6 +202,7 @@ $(call gb_Helper_abbreviate_dirs,\
 	$(gb_CC) \
 		$(DEFS) \
 		$(T_CFLAGS) \
+		$(CFLAGS) \
 		-c $(3) \
 		-o $(1) \
 		-MMD -MT $(1) \
@@ -198,6 +222,26 @@ $(call gb_Helper_abbreviate_dirs,\
 	$(gb_CXX) \
 		$(DEFS) \
 		$(T_CXXFLAGS) \
+		$(CXXFLAGS) \
+		-c $(3) \
+		-o $(1) \
+		-MMD -MT $(1) \
+		-MF $(4) \
+		-I$(dir $(3)) \
+		$(INCLUDE_STL) $(INCLUDE))
+endef
+
+
+# ObjCObject class
+
+define gb_ObjCObject__command
+$(call gb_Output_announce,$(2),$(true),OC,3)
+$(call gb_Helper_abbreviate_dirs,\
+	mkdir -p $(dir $(1)) $(dir $(4)) && \
+	$(gb_CC) \
+		$(DEFS) \
+		$(T_OBJCFLAGS) \
+		$(OBJCFLAGS) \
 		-c $(3) \
 		-o $(1) \
 		-MMD -MT $(1) \
@@ -216,6 +260,7 @@ $(call gb_Helper_abbreviate_dirs,\
 	$(gb_CXX) \
 		$(DEFS) \
 		$(T_OBJCXXFLAGS) \
+		$(OBJCXXFLAGS) \
 		-c $(3) \
 		-o $(1) \
 		-MMD -MT $(1) \
@@ -232,9 +277,9 @@ $(patsubst $(1):%,%,$(filter $(1):%,$(gb_LinkTarget__RPATHS)))
 endef
 
 gb_LinkTarget__RPATHS := \
-	URELIB:@__________________________________________________URELIB/ \
+	URELIB:@_______URELIB/ \
 	UREBIN: \
-	OOO:@__________________________________________________OOO/ \
+	OOO:@_______OOO/ \
 	BRAND: \
 	SDKBIN: \
 	NONEBIN: \
@@ -245,6 +290,7 @@ endef
 
 gb_LinkTarget_CFLAGS := $(gb_CFLAGS) $(gb_CFLAGS_WERROR)
 gb_LinkTarget_CXXFLAGS := $(gb_CXXFLAGS) $(gb_CXXFLAGS_WERROR)
+gb_LinkTarget_OBJCFLAGS := $(gb_CFLAGS) $(gb_CFLAGS_WERROR) $(gb_OBJCFLAGS)
 gb_LinkTarget_OBJCXXFLAGS := $(gb_CXXFLAGS) $(gb_CXXFLAGS_WERROR) $(gb_OBJCXXFLAGS)
 
 gb_LinkTarget_INCLUDE := $(filter-out %/stl, $(subst -I. , ,$(SOLARINC)))
@@ -280,11 +326,14 @@ $(call gb_Helper_abbreviate_dirs,\
 		$(if $(filter Executable,$(TARGETTYPE)),$(gb_Executable_TARGETTYPEFLAGS)) \
 		$(if $(filter Library,$(TARGETTYPE)),$(gb_Library_TARGETTYPEFLAGS)) \
 		$(subst \d,$$,$(RPATH)) \
-		$(T_LDFLAGS) \
+		$(T_LDFLAGS) $(gb_macos_LDFLAGS) \
 		$(call gb_LinkTarget__get_liblinkflags,$(LINKED_LIBS)) \
+		$(foreach object,$(ASMOBJECTS),$(call gb_AsmObject_get_target,$(object))) \
 		$(foreach object,$(COBJECTS),$(call gb_CObject_get_target,$(object))) \
 		$(foreach object,$(CXXOBJECTS),$(call gb_CxxObject_get_target,$(object))) \
+		$(foreach object,$(OBJCOBJECTS),$(call gb_ObjCObject_get_target,$(object))) \
 		$(foreach object,$(OBJCXXOBJECTS),$(call gb_ObjCxxObject_get_target,$(object))) \
+		$(foreach object,$(GENCOBJECTS),$(call gb_GenCObject_get_target,$(object))) \
 		$(foreach object,$(GENCXXOBJECTS),$(call gb_GenCxxObject_get_target,$(object))) \
 		$(foreach lib,$(LINKED_STATIC_LIBS),$(call gb_StaticLibrary_get_target,$(lib))) \
 		$(LIBS) \
@@ -292,7 +341,7 @@ $(call gb_Helper_abbreviate_dirs,\
 		`cat $${DYLIB_FILE}` && \
 	$(if $(filter Library,$(TARGETTYPE)),\
 		$(PERL) $(SOLARENV)/bin/macosx-change-install-names.pl Library $(LAYER) $(1) && \
-		ln -sf $(1) $(patsubst %.dylib,%.jnilib,$(1)) &&) \
+		$(if $(filter %.dylib,$(1)),ln -shf $(1) $(patsubst %.dylib,%.jnilib,$(1)) &&)) \
 	rm -f $${DYLIB_FILE})
 endef
 
@@ -303,7 +352,9 @@ $(call gb_Helper_abbreviate_dirs,\
 	$(gb_AR) -rsu $(1) \
 		$(foreach object,$(COBJECTS),$(call gb_CObject_get_target,$(object))) \
 		$(foreach object,$(CXXOBJECTS),$(call gb_CxxObject_get_target,$(object))) \
+		$(foreach object,$(OBJCOBJECTS),$(call gb_ObjCObject_get_target,$(object))) \
 		$(foreach object,$(OBJCXXOBJECTS),$(call gb_ObjCxxObject_get_target,$(object))) \
+		$(foreach object,$(GENCOBJECTS),$(call gb_GenCObject_get_target,$(object))) \
 		$(foreach object,$(GENCXXOBJECTS),$(call gb_GenCxxObject_get_target,$(object))) \
 		2> /dev/null)
 endef
@@ -367,6 +418,9 @@ endef
 define gb_Library_Library_platform
 $(call gb_LinkTarget_get_target,$(2)) : RPATH := $(call gb_Library_get_rpath,$(1))
 $(call gb_LinkTarget_get_target,$(2)) : LAYER := $(call gb_Library_get_layer,$(1))
+$(call gb_Library_get_target,$(1)) \
+$(call gb_Library_get_clean_target,$(1)) : AUXTARGETS += \
+	$(patsubst %.dylib,%.jnilib,$(call gb_Library_get_target,$(1)))
 
 endef
 
@@ -389,6 +443,9 @@ gb_StaticLibrary_StaticLibrary_platform =
 
 gb_Executable_EXT :=
 gb_Executable_TARGETTYPEFLAGS := -bind_at_load
+
+gb_InBuild_Library_Path := $(OUTDIR)/lib
+gb_Augment_Library_Path := DYLD_LIBRARY_PATH=$(gb_InBuild_Library_Path)
 
 gb_Executable_LAYER := \
 	$(foreach exe,$(gb_Executable_UREBIN),$(exe):UREBIN) \
@@ -427,6 +484,16 @@ $(call gb_JunitTest_get_target,$(1)) : DEFS := \
     -Dorg.openoffice.test.arg.user=file://$(call gb_JunitTest_get_userdir,$(1)) \
 
 endef
+
+
+# Ant class
+
+define gb_Ant_add_dependencies
+__ant_out:=$(shell $(gb_Ant_ANTCOMMAND) -v -Ddependencies.outfile=$(WORKDIR)/Ant/$(1)/deps -f $(2) dependencies)
+$$(eval $(foreach dep,$(shell cat $(WORKDIR)/Ant/$(1)/deps),$$(call gb_Ant_add_dependency,$(call gb_Ant_get_target,$(1)),$(dep))))
+
+endef
+
 
 # SdiTarget class
 

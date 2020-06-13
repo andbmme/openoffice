@@ -26,6 +26,7 @@
 
 #include <toolkit/helper/accessiblefactory.hxx>
 #include <svtools/accessiblefactory.hxx>
+#include "accessibilitydllapi.h"
 
 /** this is the entry point to retrieve a factory for the toolkit-level Accessible/Contexts supplied
     by this library
@@ -33,7 +34,7 @@
     This function implements the factory function needed in toolkit
     (of type GetStandardAccComponentFactory).
 */
-extern "C" void* SAL_CALL getStandardAccessibleFactory();
+extern "C" ACCESSIBILITY_DLLPUBLIC void* SAL_CALL getStandardAccessibleFactory();
 
 /** this is the entry point to retrieve a factory for the svtools-level Accessible/Contexts supplied
     by this library
@@ -41,6 +42,6 @@ extern "C" void* SAL_CALL getStandardAccessibleFactory();
     This function implements the factory function needed in svtools
     (of type GetSvtAccessibilityComponentFactory).
 */
-extern "C" void* SAL_CALL getSvtAccessibilityComponentFactory();
+extern "C" ACCESSIBILITY_DLLPUBLIC void* SAL_CALL getSvtAccessibilityComponentFactory();
 
 #endif // ACCESSIBILITY_HELPER_FACTORY_HXX

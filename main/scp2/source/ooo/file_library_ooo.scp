@@ -408,7 +408,7 @@ File gid_File_Lib_Vbahelper
 End
 
 
-#ifdef WNT
+#if defined WNT || defined OS2
 
 File gid_File_Lib_Dnd
     TXT_FILE_BODY;
@@ -589,13 +589,6 @@ File gid_File_Lib_MacOSXSpell
 	TXT_FILE_BODY;
 	Styles = (PACKED);
 	Name = LIBNAME(MacOSXSpell);
-	Dir = SCP2_OOO_BIN_DIR;
-End
-
-File gid_File_Lib_avmediaQuickTime
-	TXT_FILE_BODY;
-	Styles = (PACKED);
-	Name = LIBNAME(avmediaQuickTime);
 	Dir = SCP2_OOO_BIN_DIR;
 End
 
@@ -1221,7 +1214,7 @@ File gid_File_Lib_Expwrap_Uno
   #ifdef UNX
     Name = STRING(CONCAT2(expwrap.uno,UNXSUFFIX));
   #elif defined(OS2)
-    Name = "expwrap_uno.dll";
+    Name = "expwrap.dll";
   #else
     Name = "expwrap.uno.dll";
   #endif
@@ -1473,7 +1466,7 @@ File gid_File_Lib_Ucbhelper
   #ifdef UNX
     Name = STRING(CONCAT3(libucbhelper,COMID,UNXSUFFIX));
   #elif defined OS2
-    Name = "ucbh.dll";
+    Name = "ucbhelp.dll";
   #else
     Name = STRING(CONCAT3(ucbhelper,COMID,.dll));
   #endif
@@ -1843,7 +1836,7 @@ File gid_File_Lib_Raptor
        Name = STRING(CONCAT4(libraptor2,UNXSUFFIX,.,RAPTOR_MAJOR));
     #endif
   #elif defined(OS2)
-    Name = "raptor.dll";
+    Name = "raptor20.dll";
   #else
    #ifdef _gcc3
     Name = "libraptor-1.dll";
@@ -1864,7 +1857,7 @@ File gid_File_Lib_Rasqal
        Name = STRING(CONCAT4(librasqal,UNXSUFFIX,.,RASQAL_MAJOR));
     #endif
   #elif defined(OS2)
-    Name = "rasqal.dll";
+    Name = "rasqal3.dll";
   #else
    #ifdef _gcc3
        Name = STRING(CONCAT3(librasqal-,RASQAL_MAJOR,.dll));
@@ -1885,7 +1878,7 @@ File gid_File_Lib_Rdf
        Name = STRING(CONCAT4(librdf,UNXSUFFIX,.,REDLAND_MAJOR));
     #endif
   #elif defined(OS2)
-    Name = "librdf.dll";
+    Name = "rdf0.dll";
   #else
    #ifdef _gcc3
     Name = "librdf-0.dll";
@@ -2023,7 +2016,7 @@ File gid_File_Lib_Apr
 	// Looks like the major version number is part of the name, not
 	// part of the suffix.  An error?
 	#ifdef MACOSX
-            Name = STRING(CONCAT6(libapr-1,.0.,APR_MINOR,.,APR_MICRO,UNXSUFFIX));
+            Name = STRING(CONCAT2(libapr-1,UNXSUFFIX));
 	#elif FREEBSD
             Name = STRING(CONCAT3(libapr-1,UNXSUFFIX,.5));
         #else
@@ -2042,7 +2035,7 @@ File gid_File_Lib_AprUtil
 	// Looks like the major version number is part of the name, not
 	// part of the suffix.  An error?
 	#ifdef MACOSX
-            Name = STRING(CONCAT6(libaprutil-1,.0.,APR_UTIL_MINOR,.,APR_UTIL_MICRO,UNXSUFFIX));
+	    Name = STRING(CONCAT2(libaprutil-1,UNXSUFFIX));
 	#elif FREEBSD
             Name = STRING(CONCAT3(libaprutil-1,UNXSUFFIX,.5));
 	#else
@@ -2061,7 +2054,7 @@ File gid_File_Lib_Serf
 	// Looks like the major version number is part of the name, not
 	// part of the suffix.  An error?
 	#ifdef MACOSX
-            Name = STRING(CONCAT4(libserf-,SERF_MAJOR,.0.0.0,UNXSUFFIX));
+            Name = STRING(CONCAT3(libserf-,SERF_MAJOR,UNXSUFFIX));
 	#elif FREEBSD
             Name = STRING(CONCAT3(libserf-1,UNXSUFFIX,.0));
 	#else

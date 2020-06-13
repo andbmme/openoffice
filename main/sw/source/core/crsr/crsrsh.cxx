@@ -1233,6 +1233,14 @@ sal_Bool SwCrsrShell::GoPrevCrsr()
 }
 
 
+sal_Bool SwCrsrShell::GetCharRectAt( SwRect& rOrig, const SwPosition& rPos,
+                                     SwCrsrMoveState* pCMS ) const
+{
+    SwCntntFrm * pFrm = GetCurrFrm();
+    return pFrm ? pFrm->GetCharRect( rOrig, rPos, pCMS ) : sal_False;
+}
+
+
 void SwCrsrShell::Paint( const Rectangle &rRect)
 {
 	SET_CURR_SHELL( this );
@@ -1538,7 +1546,7 @@ void SwCrsrShell::UpdateCrsr( sal_uInt16 eFlags, sal_Bool bIdleEnd )
                 pTblFrm->GetCharRect( aCharRect, *pTblCrsr->GetPoint() );
 #else
                 if ( !pTblFrm->GetCharRect( aCharRect, *pTblCrsr->GetPoint() ) )
-                    ASSERT( !this, "GetCharRect failed." );
+                    ASSERT( sal_False, "GetCharRect failed." );
 #endif
             }
 //          ALIGNRECT( aCharRect );
@@ -1793,7 +1801,7 @@ void SwCrsrShell::UpdateCrsr( sal_uInt16 eFlags, sal_Bool bIdleEnd )
 		// siehe Bug: 29658
 		if( !--nLoopCnt )
 		{
-			ASSERT( !this, "Endlosschleife? CharRect != OldCharRect ");
+			ASSERT( sal_False, "Endless loop? CharRect != OldCharRect ");
 			break;
 		}
 		aOld = aCharRect;
@@ -2086,7 +2094,7 @@ void SwCrsrShell::Combine()
 		CheckNodesRange( pCrsrStk->GetMark()->nNode, pCurCrsr->GetPoint()->nNode, sal_True );
 #else
 		if( !CheckNodesRange( pCrsrStk->GetMark()->nNode, pCurCrsr->GetPoint()->nNode, sal_True ))
-			ASSERT( !this, "StackCrsr & akt. Crsr nicht in gleicher Section." );
+			ASSERT( sal_False, "StackCrsr & act. Crsr not in the same section." );
 #endif
 		// kopiere das GetMark
 		if( !pCurCrsr->HasMark() )
@@ -2819,7 +2827,7 @@ sal_Bool SwCrsrShell::FindValidCntntNode( sal_Bool bOnlyText )
 {
 	if( pTblCrsr )		// was soll ich jetzt machen ??
 	{
-		ASSERT( !this, "TabellenSelection nicht aufgehoben!" );
+		ASSERT( sal_False, "Table Selection not canceled!" );
 		return sal_False;
 	}
 

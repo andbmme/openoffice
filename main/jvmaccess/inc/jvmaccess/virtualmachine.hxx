@@ -26,6 +26,7 @@
 
 #include "rtl/ref.hxx"
 #include "salhelper/simplereferenceobject.hxx"
+#include "jvmaccess/jvmaccessdllapi.h"
 
 #ifdef SOLAR_JAVA
 #include "jni.h"
@@ -58,16 +59,20 @@ public:
     public:
         /** An exception indicating failure to create an AttachGuard.
          */
+#if defined _MSC_VER
         class CreationException
+#else
+        class JVMACCESS_DLLPUBLIC CreationException
+#endif
         {
         public:
-            CreationException();
+            JVMACCESS_DLLPUBLIC CreationException();
 
-            CreationException(CreationException const &);
+            JVMACCESS_DLLPUBLIC CreationException(CreationException const &);
 
-            virtual ~CreationException();
+            JVMACCESS_DLLPUBLIC virtual ~CreationException();
 
-            CreationException & operator =(CreationException const &);
+            JVMACCESS_DLLPUBLIC CreationException & operator =(CreationException const &);
         };
 
         /** Attach the current thread to a virtual machine.
@@ -78,11 +83,11 @@ public:
             @exception CreationException
             Thrown in case attaching fails (due to a JNI problem).
          */
-        explicit AttachGuard(rtl::Reference< VirtualMachine > const & rMachine);
+        JVMACCESS_DLLPUBLIC explicit AttachGuard(rtl::Reference< VirtualMachine > const & rMachine);
 
         /** Detach the current thread from the virtual machine again.
          */
-        ~AttachGuard();
+        JVMACCESS_DLLPUBLIC ~AttachGuard();
 
         /** Get a JNI environment pointer for the current thread.
 
@@ -134,7 +139,7 @@ public:
         anyway).  This parameter is currently unused (but may be used again in
         the future).
      */
-    VirtualMachine(JavaVM * pVm, int nVersion, bool bDestroy,
+    JVMACCESS_DLLPUBLIC VirtualMachine(JavaVM * pVm, int nVersion, bool bDestroy,
                    JNIEnv * pMainThreadEnv);
 
 private:

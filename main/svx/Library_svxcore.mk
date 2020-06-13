@@ -89,6 +89,7 @@ $(call gb_Library_use_external,svxcore,icuuc)
 $(eval $(call gb_Library_add_exception_objects,svxcore,\
 	svx/source/core/coreservices \
     svx/source/customshapes/EnhancedCustomShape2d \
+    svx/source/customshapes/EnhancedCustomShapeFunctionParser \
     svx/source/customshapes/EnhancedCustomShapeGeometry \
     svx/source/customshapes/EnhancedCustomShapeTypeNames \
     svx/source/dialog/checklbx \
@@ -441,14 +442,19 @@ $(eval $(call gb_Library_add_exception_objects,svxcore,\
 # the following source file can't be compiled with optimization by some compilers (crash or endless loop):
 # Solaris Sparc with Sun compiler, gcc on MacOSX and Linux PPC
 # the latter is currently not supported by gbuild and needs a fix here later
-ifeq ($(OS),$(filter-out SOLARIS MACOSX,$(OS)))
-$(eval $(call gb_Library_add_exception_objects,svxcore,\
-    svx/source/customshapes/EnhancedCustomShapeFunctionParser \
+ifneq ($(OS),$(filter-out SOLARIS MACOSX,$(OS)))
+$(eval $(call gb_LinkTarget_set_cxx_optimization, \
+	svx/source/customshapes/EnhancedCustomShapeFunctionParser, \
+	$(gb_COMPILERNOOPTFLAGS) \
 ))
-else
-$(eval $(call gb_Library_add_cxxobjects,svxcore,\
-    svx/source/customshapes/EnhancedCustomShapeFunctionParser \
-    , $(gb_COMPILERNOOPTFLAGS) $(gb_LinkTarget_EXCEPTIONFLAGS) \
+endif
+
+# g++49 -Os sometimes leaves inline class methods undefined,
+# See: <https://gcc.gnu.org/bugzilla/show_bug.cgi?id=65009>
+ifeq ($(COM)$(shell expr $(CCNUMVER) '>=' 000400090000 '&' $(CCNUMVER) '<' 000500000000),GCC1)
+$(eval $(call gb_LinkTarget_set_cxx_optimization, \
+	svx/source/fmcomp/fmgridif, \
+	$(gb_COMPILEROPTFLAGS) -fno-devirtualize -fno-devirtualize-speculatively \
 ))
 endif
 

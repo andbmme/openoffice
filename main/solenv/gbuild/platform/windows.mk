@@ -28,6 +28,12 @@ COM := MSC
 gb_TMPDIR:=$(if $(TMPDIR),$(shell cygpath -m $(TMPDIR)),$(shell cygpath -m /tmp))
 gb_MKTEMP := mktemp --tmpdir=$(gb_TMPDIR) gbuild.XXXXXX
 
+ifeq ($(CPUNAME),INTEL)
+gb_AS := ml
+else ifeq ($(CPUNAME),X86_64)
+gb_AS := ml64
+endif
+
 gb_CC := cl
 gb_CXX := cl
 gb_LINK := link
@@ -36,6 +42,9 @@ gb_CLASSPATHSEP := ;
 gb_RC := rc
 
 # use CC/CXX if they are nondefaults
+ifneq ($(origin AS),default)
+gb_AS := $(AS)
+endif
 ifneq ($(origin CC),default)
 gb_CC := $(CC)
 gb_GCCP := $(CC)
@@ -58,12 +67,21 @@ gb_COMPILERDEFS := \
 	-D_CRT_SECURE_NO_DEPRECATE \
 	-D_MT \
 	-D_DLL \
-	-DBOOST_MEM_FN_ENABLE_CDECL \
-	-DCPPU_ENV=msci \
+	-DCPPU_ENV=$(COMNAME) \
 	-DFULL_DESK \
 	-DM1500 \
 
-gb_CPUDEFS := -DINTEL -D_X86_=1
+gb_CPUDEFS := -D$(ALIGN) -D$(CPUNAME)
+ifeq ($(CPUNAME),INTEL)
+gb_CPUDEFS += -D_X86_=1
+endif
+ifeq ($(CPUNAME),X86_64)
+gb_CPUDEFS += -D_AMD64_=1
+endif
+
+ifeq ($(CPUNAME),INTEL)
+gb_COMPILERDEFS += -DBOOST_MEM_FN_ENABLE_CDECL
+endif
 
 gb_RCDEFS := \
      -DWINVER=0x0400 \
@@ -187,11 +205,20 @@ gb_LinkTarget_NOEXCEPTIONFLAGS := \
 
 gb_NoexPrecompiledHeader_NOEXCEPTIONFLAGS := $(gb_LinkTarget_NOEXCEPTIONFLAGS)
 
+ifeq ($(CPUNAME),INTEL)
 gb_LinkTarget_LDFLAGS := \
 	-MACHINE:IX86 \
 	-NODEFAULTLIB \
 	$(patsubst %,-LIBPATH:%,$(filter-out .,$(subst ;, ,$(subst \,/,$(ILIB))))) \
-	
+
+endif
+ifeq ($(CPUNAME),X86_64)
+gb_LinkTarget_LDFLAGS := \
+	-MACHINE:X64 \
+	-NODEFAULTLIB \
+	$(patsubst %,-LIBPATH:%,$(filter-out .,$(subst ;, ,$(subst \,/,$(ILIB))))) \
+
+endif
 
 gb_DEBUG_CFLAGS := -Zi
 
@@ -248,6 +275,24 @@ $(1)))))
 endef
 
 
+# AsmObject class
+
+gb_AsmObject_EXT := .asm
+
+define gb_AsmObject__command
+$(call gb_Output_announce,$(2),$(true),ASM,3)
+$(call gb_Helper_abbreviate_dirs_native,\
+	mkdir -p $(dir $(1)) && \
+	unset INCLUDE && \
+	$(gb_AS) \
+		$(DEFS) \
+		-safeseh \
+		-Cp \
+		-coff \
+		-Fo$(1) \
+		-c $(3))
+endef
+
 # CObject class
 
 ifeq ($(gb_FULLDEPS),$(true))
@@ -280,6 +325,7 @@ $(call gb_Helper_abbreviate_dirs_native,\
 		$(DEFS) \
 		$(T_CFLAGS) \
 		-Fd$(PDBFILE) \
+		$(CFLAGS) \
         $(PCHFLAGS) \
 		-I$(dir $(3)) \
 		$(INCLUDE) \
@@ -300,6 +346,7 @@ $(call gb_Helper_abbreviate_dirs_native,\
 		$(DEFS) \
 		$(T_CXXFLAGS) \
 		-Fd$(PDBFILE) \
+		$(CXXFLAGS) \
         $(PCHFLAGS) \
 		-I$(dir $(3)) \
 		$(INCLUDE_STL) $(INCLUDE) \
@@ -412,7 +459,10 @@ $(call gb_Helper_abbreviate_dirs_native,\
 	mkdir -p $(dir $(1)) && \
 	rm -f $(1) && \
 	RESPONSEFILE=$(call var2file,$(shell $(gb_MKTEMP)),100, \
-	    $(call gb_Helper_convert_native,$(foreach object,$(CXXOBJECTS),$(call gb_CxxObject_get_target,$(object))) \
+	    $(call gb_Helper_convert_native,\
+		$(foreach object,$(ASMOBJECTS),$(call gb_AsmObject_get_target,$(object))) \
+		$(foreach object,$(CXXOBJECTS),$(call gb_CxxObject_get_target,$(object))) \
+		$(foreach object,$(GENCOBJECTS),$(call gb_GenCObject_get_target,$(object))) \
 		$(foreach object,$(GENCXXOBJECTS),$(call gb_GenCxxObject_get_target,$(object))) \
 		$(foreach object,$(COBJECTS),$(call gb_CObject_get_target,$(object))) \
 		$(PCHOBJS) $(NATIVERES))) && \
@@ -435,7 +485,12 @@ endef
 # Library class
 
 gb_Library_DEFS := -D_DLL_
+ifeq ($(CPUNAME),INTEL)
 gb_Library_TARGETTYPEFLAGS := -DLL -OPT:NOREF -SAFESEH -NXCOMPAT -DYNAMICBASE
+endif
+ifeq ($(CPUNAME),X86_64)
+gb_Library_TARGETTYPEFLAGS := -DLL -OPT:NOREF -NXCOMPAT -DYNAMICBASE
+endif
 gb_Library_get_rpath :=
 
 gb_Library_SYSPRE := i
@@ -549,7 +604,9 @@ $(call gb_Deliver_add_deliverable,$(OUTDIR)/bin/$(notdir $(3)),$(3),$(1))
 
 $(call gb_LinkTarget_get_target,$(2)) \
 $(call gb_LinkTarget_get_headers_target,$(2)) : PDBFILE = $(call gb_LinkTarget_get_pdbfile,$(2))
-
+ifeq ($(gb_FULLDEPS),$(true))
+$(call gb_LinkTarget_get_dep_target,$(2)) : PDBFILE = $(call gb_LinkTarget_get_pdbfile,$(2))
+endif
 endef
 
 define gb_Library_add_default_nativeres
@@ -604,9 +661,17 @@ endef
 # Executable class
 
 gb_Executable_EXT := .exe
+ifeq ($(CPUNAME),INTEL)
 gb_Executable_TARGETTYPEFLAGS := -RELEASE -BASE:0x1b000000 -OPT:NOREF -INCREMENTAL:NO -DEBUG -SAFESEH -NXCOMPAT -DYNAMICBASE
+endif
+ifeq ($(CPUNAME),X86_64)
+gb_Executable_TARGETTYPEFLAGS := -RELEASE -BASE:0x1b000000 -OPT:NOREF -INCREMENTAL:NO -DEBUG -NXCOMPAT -DYNAMICBASE
+endif
 gb_Executable_get_rpath :=
 gb_Executable_TARGETGUI := 
+
+gb_InBuild_Library_Path := $(OUTDIR)/bin
+gb_Augment_Library_Path := PATH="$${PATH}:$(gb_InBuild_Library_Path)"
 
 define gb_Executable_Executable_platform
 $(call gb_LinkTarget_set_auxtargets,$(2),\
@@ -641,6 +706,16 @@ $(call gb_JunitTest_get_target,$(1)) : DEFS := \
     -Dorg.openoffice.test.arg.user=file:///$(call gb_JunitTest_get_userdir,$(1)) \
 
 endef
+
+
+# Ant class
+
+define gb_Ant_add_dependencies
+__ant_out:=$(shell $(gb_Ant_ANTCOMMAND) -Ddependencies.outfile=`cygpath -m $(WORKDIR)/Ant/$(1)/deps` -f `cygpath -m $(2)` dependencies)
+$$(eval $(foreach dep,$(shell cat $(WORKDIR)/Ant/$(1)/deps),$$(call gb_Ant_add_dependency,$(call gb_Ant_get_target,$(1)),$(shell cygpath -u $(dep)))))
+
+endef
+
 
 
 # SdiTarget class

@@ -37,20 +37,9 @@ all:
 
 # --- Files --------------------------------------------------------
 
-TARFILE_NAME=curl-7.50.1
-TARFILE_MD5=c264788f2e4313a05140d712c1ec90c2
-PATCH_FILES=
-
-.IF "$(GUI)"=="WNT"
-	PATCH_FILES+=curl-7.50.1_win.patch
-#	.IF "$(COM)"=="GCC"
-#		PATCH_FILES+=curl-7.19.7_mingw.patch
-#	.ENDIF
-.ENDIF
-
-
-#CONVERTFILES= \
-    lib$/Makefile.vc6
+TARFILE_NAME=curl-7.66.0
+TARFILE_MD5=8cb2898a9adc106075ac3cdc2b965bf6
+PATCH_FILES=buildssh.patch
 
 #ADDITIONAL_FILES= lib$/config-os2.h lib$/Makefile.os2
 
@@ -107,15 +96,26 @@ EXCFLAGS="/EHa /Zc:wchar_t- /D "_CRT_SECURE_NO_DEPRECATE""
 EXCFLAGS="/EHsc /YX"
 .ENDIF
 
-BUILD_DIR=.$/lib
-.IF "$(debug)"==""
-BUILD_ACTION=nmake -f Makefile.vc9 cfg=release-dll EXCFLAGS=$(EXCFLAGS)
-.ELSE
-BUILD_ACTION=nmake -f Makefile.vc9 cfg=debug-dll EXCFLAGS=$(EXCFLAGS)
+.IF "$(CPUNAME)"=="INTEL"
+curl_MACHINE:="X86"
+.ELIF "$(CPUNAME)"=="X86_64"
+curl_MACHINE:="X64"
 .ENDIF
 
-OUT2BIN=$(BUILD_DIR)$/libcurl.dll
-OUT2LIB=$(BUILD_DIR)$/libcurl.lib
+BUILD_DIR=.$/winbuild
+.IF "$(debug)"==""
+BUILD_ACTION=CC="cl.exe" nmake -f Makefile.vc mode=dll VC=9 EXCFLAGS=$(EXCFLAGS) MACHINE=$(curl_MACHINE)
+.ELSE
+BUILD_ACTION=CC="cl.exe" nmake -f Makefile.vc mode=dll VC=9 DEBUG=yes EXCFLAGS=$(EXCFLAGS) MACHINE=$(curl_MACHINE)
+.ENDIF
+
+.IF "$(CPUNAME)"=="INTEL"
+OUT2BIN=$(BUILD_DIR)$/../builds/libcurl-vc9-X86-release-dll-ipv6-sspi-winssl-obj-lib/libcurl.dll
+OUT2LIB=$(BUILD_DIR)$/../builds/libcurl-vc9-X86-release-dll-ipv6-sspi-winssl-obj-lib/libcurl.lib
+.ELIF "$(CPUNAME)"=="X86_64"
+OUT2BIN=$(BUILD_DIR)$/../builds/libcurl-vc9-X64-release-dll-ipv6-sspi-winssl-obj-lib/libcurl.dll
+OUT2LIB=$(BUILD_DIR)$/../builds/libcurl-vc9-X64-release-dll-ipv6-sspi-winssl-obj-lib/libcurl.lib
+.ENDIF
 
 .ENDIF
 .ENDIF			# "$(GUI)"=="WNT"
@@ -144,8 +144,9 @@ OUT2INC= \
 	include$/curl$/typecheck-gcc.h  	\
 	include$/curl$/stdcheaders.h  	\
 	include$/curl$/mprintf.h	    \
-	include$/curl$/curlbuild.h		\
-	include$/curl$/curlrules.h
+	include$/curl$/system.h			\
+	include$/curl$/urlapi.h
+
 
 # --- Targets ------------------------------------------------------
 

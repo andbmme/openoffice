@@ -60,7 +60,7 @@ endef
 
 
 define gb_Executable_forward_to_Linktarget
-gb_Executable_$(1) = $$(call gb_LinkTarget_$(1),Executable/$$(1)$$(gb_Executable_EXT),$$(2),$$(3))
+gb_Executable_$(1) = $$(call gb_LinkTarget_$(1),Executable/$$(1)$$(gb_Executable_EXT),$$(2),$$(3),$$(4))
 
 endef
 
@@ -73,6 +73,7 @@ $(eval $(foreach method,\
 	add_objcxxobjects \
 	add_exception_objects \
 	add_noexception_objects \
+	add_generated_cobjects \
 	add_generated_exception_objects \
 	set_yaccflags \
 	add_cflags \
@@ -89,6 +90,7 @@ $(eval $(foreach method,\
 	add_libs \
 	set_library_path_flags \
 	add_api \
+	set_private_api \
 	add_linked_libs \
 	add_linked_static_libs \
 	use_external \
@@ -96,6 +98,9 @@ $(eval $(foreach method,\
 	add_package_headers \
 	add_sdi_headers \
 	add_precompiled_header \
+	set_private_extract_of_public_api \
+	add_bison_files \
+	add_flex_files \
 ,\
 	$(call gb_Executable_forward_to_Linktarget,$(method))\
 ))

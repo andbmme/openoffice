@@ -57,6 +57,8 @@ JAVABIN=bin
 ifeq "$(PLATFORM)" "windows"
 # Settings for Windows using Microsoft compiler/linker
 
+PROCTYPE := $(shell $(PRJ)/config.guess | cut -d"-" -f1 | sed -e 's/^i.86$$/i386/')
+
 OS=WIN
 PS=\\
 ICL=$$
@@ -119,8 +121,14 @@ SDK_JAVA_INCLUDES = -I"$(OO_SDK_JAVA_HOME)/include" -I"$(OO_SDK_JAVA_HOME)/inclu
 # define for used compiler necessary for UNO
 # -DCPPU_ENV=msci -- windows msvc 4.x - 7.x
 
+ifeq "$(PROCTYPE)" "i386"
 CC_DEFINES_JNI=-DWIN32 -DWNT -D_DLL -DCPPU_ENV=msci
 CC_DEFINES=-DWIN32 -DWNT -D_DLL -DCPPU_ENV=msci
+endif
+ifeq "$(PROCTYPE)" "x86_64"
+CC_DEFINES_JNI=-DWIN32 -DWNT -D_DLL -DCPPU_ENV=mscx
+CC_DEFINES=-DWIN32 -DWNT -D_DLL -DCPPU_ENV=mscx
+endif
 CC_OUTPUT_SWITCH=-Fo
 
 LIBRARY_LINK_FLAGS=/NODEFAULTLIB /DLL /DEBUGTYPE:cv
@@ -345,8 +353,8 @@ endif
 SDK_JAVA_INCLUDES = -I"$(OO_SDK_JAVA_HOME)/include" -I"$(OO_SDK_JAVA_HOME)/include/linux"
 CC_INCLUDES=-I. -I$(OUT)/inc -I$(OUT)/inc/examples -I$(PRJ)/include
 STL_INCLUDES=-I"$(OO_SDK_HOME)/include/stl"
-CC_DEFINES_JNI=-DUNX -DGCC -DLINUX -DCPPU_ENV=$(CPPU_ENV) -DGXX_INCLUDE_PATH=$(SDK_GXX_INCLUDE_PATH)
-CC_DEFINES=-DUNX -DGCC -DLINUX -DCPPU_ENV=$(CPPU_ENV) -DGXX_INCLUDE_PATH=$(SDK_GXX_INCLUDE_PATH) -DHAVE_GCC_VISIBILITY_FEATURE
+CC_DEFINES_JNI=-DUNX -DGCC -DLINUX -DCPPU_ENV=$(CPPU_ENV)
+CC_DEFINES=-DUNX -DGCC -DLINUX -DCPPU_ENV=$(CPPU_ENV) -DHAVE_GCC_VISIBILITY_FEATURE
 
 # define for used compiler necessary for UNO
 #-DCPPU_ENV=gcc2 -- gcc 2.91/2.95
@@ -435,16 +443,16 @@ SALHELPERLIB=-luno_salhelper$(COMID)
 REGLIB=-lreg
 STORELIB=-lstore
 
-SALDYLIB=-Wl,-dylib_file,@__________________________________________________URELIB/libuno_sal.dylib.3:'$(OO_SDK_OFFICE_LIB_DIR)/libuno_sal.dylib'
-CPPUDYLIB=-Wl,-dylib_file,@__________________________________________________URELIB/libuno_cppu.dylib.3:'$(OO_SDK_OFFICE_LIB_DIR)/libuno_cppu.dylib'
-CPPUHELPERDYLIB=-Wl,-dylib_file,@__________________________________________________URELIB/libuno_cppuhelper'$(COMID).dylib.3:$(OO_SDK_OFFICE_LIB_DIR)/libuno_cppuhelper$(COMID).dylib'
-SALHELPERDYLIB=-Wl,-dylib_file,@__________________________________________________URELIB/libuno_salhelper$(COMID).dylib.3:'$(OO_SDK_OFFICE_LIB_DIR)/libuno_salhelper$(COMID).dylib'
-REGDYLIB=-Wl,-dylib_file,@__________________________________________________URELIB/libreg.dylib.3:'$(OO_SDK_OFFICE_LIB_DIR)/libreg.dylib'
-STOREDYLIB=-Wl,-dylib_file,@__________________________________________________URELIB/libstore.dylib.3:'$(OO_SDK_OFFICE_LIB_DIR)/libstore.dylib'
+SALDYLIB=-Wl,-dylib_file,@_______URELIB/libuno_sal.dylib:'$(OO_SDK_OFFICE_LIB_DIR)/libuno_sal.dylib'
+CPPUDYLIB=-Wl,-dylib_file,@_______URELIB/libuno_cppu.dylib:'$(OO_SDK_OFFICE_LIB_DIR)/libuno_cppu.dylib'
+CPPUHELPERDYLIB=-Wl,-dylib_file,@_______URELIB/libuno_cppuhelper'$(COMID).dylib:$(OO_SDK_OFFICE_LIB_DIR)/libuno_cppuhelper$(COMID).dylib'
+SALHELPERDYLIB=-Wl,-dylib_file,@_______URELIB/libuno_salhelper$(COMID).dylib:'$(OO_SDK_OFFICE_LIB_DIR)/libuno_salhelper$(COMID).dylib'
+REGDYLIB=-Wl,-dylib_file,@_______URELIB/libreg.dylib:'$(OO_SDK_OFFICE_LIB_DIR)/libreg.dylib'
+STOREDYLIB=-Wl,-dylib_file,@_______URELIB/libstore.dylib:'$(OO_SDK_OFFICE_LIB_DIR)/libstore.dylib'
 
-INSTALL_NAME_URELIBS=$(INSTALLTOOL) -change @__________________________________________________URELIB/libuno_sal.dylib.3 @executable_path/libuno_sal.dylib.3 -change  @__________________________________________________URELIB/libuno_cppu.dylib.3 @executable_path/libuno_cppu.dylib.3 -change @__________________________________________________URELIB/libuno_cppuhelper$(COMID).dylib.3 @executable_path/libuno_cppuhelper$(COMID).dylib.3 -change @__________________________________________________URELIB/libuno_salhelper$(COMID).dylib.3 @executable_path/libuno_salhelper$(COMID).dylib.3 -change @__________________________________________________URELIB/libreg.dylib.3 @executable_path/libreg.dylib.3 -change @__________________________________________________URELIB/libstore.dylib.3 @executable_path/libstore.dylib.3
+INSTALL_NAME_URELIBS=$(INSTALLTOOL) -change @_______URELIB/libuno_sal.dylib @executable_path/libuno_sal.dylib -change  @_______URELIB/libuno_cppu.dylib @executable_path/libuno_cppu.dylib -change @_______URELIB/libuno_cppuhelper$(COMID).dylib @executable_path/libuno_cppuhelper$(COMID).dylib -change @_______URELIB/libuno_salhelper$(COMID).dylib @executable_path/libuno_salhelper$(COMID).dylib -change @_______URELIB/libreg.dylib @executable_path/libreg.dylib -change @_______URELIB/libstore.dylib @executable_path/libstore.dylib
 
-INSTALL_NAME_URELIBS_BIN=$(INSTALLTOOL) -change @__________________________________________________URELIB/libuno_sal.dylib.3 libuno_sal.dylib.3 -change  @__________________________________________________URELIB/libuno_cppu.dylib.3 libuno_cppu.dylib.3 -change @__________________________________________________URELIB/libuno_cppuhelper$(COMID).dylib.3 libuno_cppuhelper$(COMID).dylib.3 -change @__________________________________________________URELIB/libuno_salhelper$(COMID).dylib.3 libuno_salhelper$(COMID).dylib.3 -change @__________________________________________________URELIB/libreg.dylib.3 libreg.dylib.3 -change @__________________________________________________URELIB/libstore.dylib.3 libstore.dylib.3
+INSTALL_NAME_URELIBS_BIN=$(INSTALLTOOL) -change @_______URELIB/libuno_sal.dylib libuno_sal.dylib -change  @_______URELIB/libuno_cppu.dylib libuno_cppu.dylib -change @_______URELIB/libuno_cppuhelper$(COMID).dylib libuno_cppuhelper$(COMID).dylib -change @_______URELIB/libuno_salhelper$(COMID).dylib libuno_salhelper$(COMID).dylib -change @_______URELIB/libreg.dylib libreg.dylib -change @_______URELIB/libstore.dylib libstore.dylib
 
 EMPTYSTRING=
 PATH_SEPARATOR=:
@@ -464,8 +472,8 @@ endif
 SDK_JAVA_INCLUDES = -I/System/Library/Frameworks/JavaVM.framework/Versions/Current/Headers -I/System/Library/Frameworks/JavaVM.framework/Headers
 CC_INCLUDES=-I. -I$(OUT)/inc -I$(OUT)/inc/examples -I$(PRJ)/include
 STL_INCLUDES=-I"$(OO_SDK_HOME)/include/stl"
-CC_DEFINES_JNI=-DUNX -DGCC -DMACOSX -DCPPU_ENV=$(CPPU_ENV) -DGXX_INCLUDE_PATH=$(SDK_GXX_INCLUDE_PATH)
-CC_DEFINES=-DUNX -DGCC -DMACOSX -DCPPU_ENV=$(CPPU_ENV) -DGXX_INCLUDE_PATH=$(SDK_GXX_INCLUDE_PATH) -DHAVE_GCC_VISIBILITY_FEATURE
+CC_DEFINES_JNI=-DUNX -DGCC -DMACOSX -DCPPU_ENV=$(CPPU_ENV)
+CC_DEFINES=-DUNX -DGCC -DMACOSX -DCPPU_ENV=$(CPPU_ENV) -DHAVE_GCC_VISIBILITY_FEATURE
 
 CC_OUTPUT_SWITCH=-o
 
@@ -585,8 +593,8 @@ endif
 SDK_JAVA_INCLUDES = -I"$(OO_SDK_JAVA_HOME)/include" -I"$(OO_SDK_JAVA_HOME)/include/freebsd"
 CC_INCLUDES=-I. -I$(OUT)/inc -I$(OUT)/inc/examples -I$(PRJ)/include
 STL_INCLUDES=-I"$(OO_SDK_HOME)/include/stl"
-CC_DEFINES_JNI=-DUNX -DGCC -DFREEBSD -DCPPU_ENV=$(CPPU_ENV) -DGXX_INCLUDE_PATH=$(SDK_GXX_INCLUDE_PATH)
-CC_DEFINES=-DUNX -DGCC -DFREEBSD -DCPPU_ENV=$(CPPU_ENV) -DGXX_INCLUDE_PATH=$(SDK_GXX_INCLUDE_PATH) -DHAVE_GCC_VISIBILITY_FEATURE
+CC_DEFINES_JNI=-DUNX -DGCC -DFREEBSD -DCPPU_ENV=$(CPPU_ENV)
+CC_DEFINES=-DUNX -DGCC -DFREEBSD -DCPPU_ENV=$(CPPU_ENV) -DHAVE_GCC_VISIBILITY_FEATURE
 
 CC_OUTPUT_SWITCH=-o
 

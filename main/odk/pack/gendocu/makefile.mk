@@ -64,7 +64,10 @@ JAVA_BEAN_SRC_FILES=\
         $(JAVA_SRC_DIR)$/com$/sun$/star$/beans$/OfficeConnection.java \
         $(JAVA_SRC_DIR)$/com$/sun$/star$/beans$/OfficeWindow.java
 
-AUTODOCPARAMS= -lg c++ \
+AUTODOCPARAMS=\
+        -ignoredefine CPPUHELPER_DLLPUBLIC \
+        -ignoredefine SAL_DLLPUBLIC_EXPORT \
+        -lg c++ \
         -p sal $(INCOUT) -t sal -t osl -t rtl \
         -p store $(INCOUT) -t store \
         -p registry $(INCOUT) -t registry \
@@ -97,7 +100,7 @@ $(CPP_DOCU_INDEX_FILE) : $(CPP_DOCU_CLEANUP_FLAG)
 	-rm $(@:d:d)$/cpp.css
 	$(MY_TEXTCOPY) $(MY_TEXTCOPY_SOURCEPRE) $(PRJ)$/docs$/cpp$/ref$/cpp.css $(MY_TEXTCOPY_TARGETPRE) $(@:d:d)$/cpp.css
 
-$(JAVA_SRC_FILES) : $(SOLARCOMMONBINDIR)$/jurt_src.zip $(SOLARCOMMONBINDIR)$/ridl_src.zip $(SOLARCOMMONBINDIR)$/unoloader_src.zip $(SOLARCOMMONPCKDIR)$/juh_src.zip
+$(JAVA_SRC_FILES) : $(SOLARCOMMONPCKDIR)$/jurt_src.zip $(SOLARCOMMONPCKDIR)$/ridl_src.zip $(SOLARCOMMONPCKDIR)$/unoloader_src.zip $(SOLARCOMMONPCKDIR)$/juh_src.zip
 	-$(MKDIRHIER) $(@:d)        
 	$(MY_COPY) $^ $(JAVA_SRC_DIR)
 	cd $(JAVA_SRC_DIR) && unzip -qu jurt_src.zip && unzip -qu ridl_src.zip && unzip -qu unoloader_src.zip && unzip -qu juh_src.zip

@@ -55,9 +55,9 @@ gb_OSDEFS := \
 
 gb_COMPILERDEFS := \
 	-D$(COM) \
-	-DCPPU_ENV=sunpro5 \
+	-DCPPU_ENV=$(COMNAME) \
 
-gb_CPUDEFS := -D$(CPUNAME)
+gb_CPUDEFS := -D$(ALIGN) -D$(CPUNAME)
 ifeq ($(CPUNAME),SPARC)
 gb_CPUDEFS += -D__sparcv8plus
 endif
@@ -109,15 +109,18 @@ gb_DEBUG_CFLAGS := -g
 
 ifeq ($(gb_DEBUGLEVEL),2)
 gb_COMPILEROPTFLAGS :=
+gb_COMPILEROPT1FLAGS :=
 else
 ifeq ($(CPUNAME),INTEL)
 gb_COMPILEROPTFLAGS := -xarch=generic -xO3
+gb_COMPILEROPT1FLAGS := -xarch=generic -xO1
 else # ifeq ($(CPUNAME),SPARC)
 #  -m32 -xarch=sparc        restrict target to 32 bit sparc
 #  -xO3                     optimization level 3
 #  -xspace                  don't do optimizations which do increase binary size
 #  -xprefetch=yes           do prefetching (helps on UltraSparc III)
 gb_COMPILEROPTFLAGS := -m32 -xarch=sparc -xO3 -xspace -xprefetch=yes
+gb_COMPILEROPT1FLAGS := -m32 -xarch=sparc -xO1 -xspace -xprefetch=yes
 endif
 endif
 
@@ -142,6 +145,24 @@ $(1)
 endef
 
 
+# AsmObject class
+
+gb_AsmObject_EXT := .s
+
+define gb_AsmObject__command
+$(call gb_Output_announce,$(2),$(true),ASM,3)
+$(call gb_Helper_abbreviate_dirs,\
+	mkdir -p $(dir $(1)) && \
+	$(gb_CC) \
+		$(DEFS) \
+		$(T_CFLAGS) \
+		$(CFLAGS) \
+		-c $(3) \
+		-o $(1) \
+		-I$(dir $(3)) \
+		$(INCLUDE))
+endef
+
 # CObject class
 
 define gb_CObject__command
@@ -156,6 +177,7 @@ $(call gb_Helper_abbreviate_dirs,\
 		-xMF $(4) \
 		$(DEFS) \
 		$(T_CFLAGS) \
+		$(CFLAGS) \
 		-I$(dir $(3)) \
 		$(INCLUDE))
 endef
@@ -170,6 +192,7 @@ $(call gb_Helper_abbreviate_dirs,\
 	$(gb_CXX) \
 		$(DEFS) \
 		$(T_CXXFLAGS) \
+		$(CXXFLAGS) \
 		-c $(3) \
 		-o $(1) \
 		-xMMD \
@@ -205,16 +228,26 @@ $(call gb_Helper_abbreviate_dirs,\
 	mkdir -p $(dir $(1)) && \
 	$(gb_CXX) \
 		$(if $(filter Library,$(TARGETTYPE)),$(gb_Library_TARGETTYPEFLAGS)) \
+		$(if $(VERSIONMAP),$(gb_Library_VERSIONMAPFLAG) $(VERSIONMAP)) \
+		$(if $(call gb_Library_is_udk_versioned,$(1)),-Wl$(COMMA)-h$(notdir $(1)).$(gb_UDK_MAJOR)) \
 		$(subst \d,$$,$(RPATH)) \
 		$(T_LDFLAGS) \
+		$(foreach object,$(ASMOBJECTS),$(call gb_AsmObject_get_target,$(object))) \
 		$(foreach object,$(COBJECTS),$(call gb_CObject_get_target,$(object))) \
 		$(foreach object,$(CXXOBJECTS),$(call gb_CxxObject_get_target,$(object))) \
+		$(foreach object,$(GENCOBJECTS),$(call gb_GenCObject_get_target,$(object))) \
 		$(foreach object,$(GENCXXOBJECTS),$(call gb_GenCxxObject_get_target,$(object))) \
 		$(foreach lib,$(LINKED_STATIC_LIBS),$(call gb_StaticLibrary_get_target,$(lib))) \
 		$(patsubst lib%.so,-l%,$(foreach lib,$(LINKED_LIBS),$(call gb_Library_get_filename,$(lib)))) \
 		$(patsubst %,-l%,$(EXTERNAL_LIBS)) \
 		$(LIBS) \
-		-o $(1))
+		-o $(if $(call gb_Library_is_udk_versioned,$(1)),$(1).$(gb_UDK_MAJOR),$(1)))
+endef
+
+define gb_LinkTarget__command_symlink_udk_versioned_library
+	$(if $(call gb_Library_is_udk_versioned,$(1)),
+		$(call gb_Helper_abbreviate_dirs,\
+			rm -f $(1) && ln -s $(notdir $(1)).$(gb_UDK_MAJOR) $(1)))
 endef
 
 define gb_LinkTarget__command_staticlink
@@ -223,6 +256,7 @@ $(call gb_Helper_abbreviate_dirs,\
 	$(gb_AR) -rsu $(1) \
 		$(foreach object,$(COBJECTS),$(call gb_CObject_get_target,$(object))) \
 		$(foreach object,$(CXXOBJECTS),$(call gb_CxxObject_get_target,$(object))) \
+		$(foreach object,$(GENCOBJECTS),$(call gb_GenCObject_get_target,$(object))) \
 		$(foreach object,$(GENCXXOBJECTS),$(call gb_GenCxxObject_get_target,$(object))) \
 		2> /dev/null)
 endef
@@ -230,6 +264,7 @@ endef
 define gb_LinkTarget__command
 $(call gb_Output_announce,$(2),$(true),LNK,4)
 $(if $(filter Library GoogleTest Executable,$(TARGETTYPE)),$(call gb_LinkTarget__command_dynamiclink,$(1)))
+$(if $(filter Library,$(TARGETTYPE)),$(call gb_LinkTarget__command_symlink_udk_versioned_library,$(1)))
 $(if $(filter StaticLibrary,$(TARGETTYPE)),$(call gb_LinkTarget__command_staticlink,$(1)))
 endef
 
@@ -246,6 +281,7 @@ gb_Library_STLEXT := port_sunpro$(gb_Library_PLAINEXT)
 else
 gb_Library_STLEXT := port_sunpro_debug$(gb_Library_PLAINEXT)
 endif
+gb_Library_VERSIONMAPFLAG := -M
 
 ifeq ($(CPUNAME),INTEL)
 gb_Library_OOOEXT := $(gb_Library_PLAINEXT)
@@ -303,6 +339,11 @@ endef
 define gb_Library_Library_platform
 $(call gb_LinkTarget_get_target,$(2)) : RPATH := $(call gb_Library_get_rpath,$(1))
 
+ifneq (,$(call gb_Library_is_udk_versioned,$(call gb_Library_get_target,$(1))))
+$(call gb_Library_get_target,$(1)) \
+$(call gb_Library_get_clean_target,$(1)) : AUXTARGETS +=  \
+	$(call gb_Library_get_target,$(1)).$(gb_UDK_MAJOR)
+endif
 endef
 
 
@@ -323,6 +364,9 @@ gb_StaticLibrary_StaticLibrary_platform =
 # Executable class
 
 gb_Executable_EXT :=
+
+gb_InBuild_Library_Path := $(OUTDIR)/lib
+gb_Augment_Library_Path := LD_LIBRARY_PATH=$(gb_InBuild_Library_Path)
 
 gb_Executable_LAYER := \
 	$(foreach exe,$(gb_Executable_UREBIN),$(exe):UREBIN) \
@@ -360,6 +404,16 @@ $(call gb_JunitTest_get_target,$(1)) : DEFS := \
     -Dorg.openoffice.test.arg.user=file://$(call gb_JunitTest_get_userdir,$(1)) \
 
 endef
+
+
+# Ant class
+
+define gb_Ant_add_dependencies
+__ant_out:=$(shell $(gb_Ant_ANTCOMMAND) -v -Ddependencies.outfile=$(WORKDIR)/Ant/$(1)/deps -f $(2) dependencies)
+$$(eval $(foreach dep,$(shell cat $(WORKDIR)/Ant/$(1)/deps),$$(call gb_Ant_add_dependency,$(call gb_Ant_get_target,$(1)),$(dep))))
+
+endef
+
 
 # SdiTarget class
 

@@ -39,6 +39,7 @@ endif
 
 ifeq ($(OS),OS2)
 $(eval $(call gb_Module_add_targets,dtrans,\
+	Library_dnd_os2 \
 	Library_sysdtrans_os2 \
 ))
 endif

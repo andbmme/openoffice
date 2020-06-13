@@ -211,7 +211,7 @@ void SwHTMLParser::SetAnchorAndAdjustment( sal_Int16 eVertOri,
 		short nIndent = 0;
 		GetMarginsFromContextWithNumBul( nLeftSpace, nRightSpace, nIndent );
 
-		// Horizonale Ausrichtung und Umlauf bestimmen.
+		// Horizontale Ausrichtung und Umlauf bestimmen.
         sal_Int16 eHoriRel;
 		SwSurround eSurround;
 		switch( eHoriOri )
@@ -1380,7 +1380,7 @@ void SwHTMLParser::StripTrailingPara()
                     SwCntntNode* pNd = pDoc->GetNodes().GoPrevious(&nNewNdIdx);
                     if(!pNd)
                     {
-                        ASSERT(!this, "Hoppla, wo ist mein Vorgaenger-Node");
+                        ASSERT(sal_False, "Oops, where is my predecessor node");
                         return;
                     }
                     {

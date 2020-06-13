@@ -55,17 +55,12 @@ gb_OSDEFS := \
 	-DOS2 \
 	$(PTHREAD_CFLAGS) \
 
-ifeq ($(GXX_INCLUDE_PATH),)
-GXX_INCLUDE_PATH=$(COMPATH)/include/c++/$(shell gcc -dumpversion)
-endif
-
 gb_COMPILERDEFS := \
 	-D$(COM) \
 	-DHAVE_GCC_VISIBILITY_FEATURE \
-	-DCPPU_ENV=gcc3 \
-	-DGXX_INCLUDE_PATH=$(GXX_INCLUDE_PATH) \
+	-DCPPU_ENV=$(COMNAME) \
 
-gb_CPUDEFS := -DINTEL -D_X86_=1 -DX86
+gb_CPUDEFS := -D$(ALIGN) -DINTEL -D_X86_=1 -DX86
 
 gb_RCDEFS := \
 	-DOS2 \
@@ -130,6 +125,7 @@ gb_LinkTarget_LDFLAGS := \
 	-Zhigh-mem \
 	-Zlinker "DISABLE 1121" \
 	-Zmap \
+	-lcx \
 	$(patsubst %,-LIBPATH:%,$(filter-out .,$(subst ;, ,$(subst \,/,$(ILIB))))) \
 	$(subst -L../lib , ,$(SOLARLIB)) \
 
@@ -141,9 +137,11 @@ endif
 
 ifeq ($(gb_DEBUGLEVEL),2)
 gb_COMPILEROPTFLAGS := -O0
+gb_COMPILEROPT1FLAGS := -O0
 #gb_LinkTarget_LDFLAGS += -DEBUG
 else
 gb_COMPILEROPTFLAGS := -Os
+gb_COMPILEROPT1FLAGS := -O1
 endif
 
 gb_COMPILERNOOPTFLAGS := -O0
@@ -161,6 +159,25 @@ $(1)
 endef
 
 
+# AsmObject class
+
+gb_AsmObject_EXT := .s
+
+define gb_AsmObject__command
+$(call gb_Output_announce,$(2),$(true),ASM,3)
+$(call gb_Helper_abbreviate_dirs,\
+	mkdir -p $(dir $(1)) && \
+	$(gb_CC) \
+		$(DEFS) \
+		$(T_CFLAGS) \
+		$(CFLAGS) \
+		-c $(3) \
+		-o $(1) \
+		-MT $(1) \
+		-I$(dir $(3)) \
+		$(INCLUDE))
+endef
+
 # CObject class
 
 # $(call gb_CObject__command,object,relative-source,source,dep-file)
@@ -171,6 +188,7 @@ $(call gb_Helper_abbreviate_dirs,\
 	$(gb_CC) \
 		$(DEFS) \
 		$(T_CFLAGS) \
+		$(CFLAGS) \
 		-c $(3) \
 		-o $(1) \
 		-MMD -MT $(1) \
@@ -190,6 +208,7 @@ $(call gb_Helper_abbreviate_dirs,\
 	$(gb_CXX) \
 		$(DEFS) \
 		$(T_CXXFLAGS) \
+		$(CXXFLAGS) \
 		-c $(3) \
 		-o $(1) \
 		-MMD -MT $(1) \
@@ -312,9 +331,12 @@ $(call gb_Helper_abbreviate_dirs_native,\
 	$(if $(DLLTARGET), echo LIBRARY	$(DLLBASE) INITINSTANCE TERMINSTANCE > $(DLLDEF) &&) \
 	$(if $(DLLTARGET), echo DATA MULTIPLE >> $(DLLDEF) &&) \
 	RESPONSEFILE=$(call var2filecr,$(shell $(gb_MKTEMP)),1, \
-	    $(call gb_Helper_convert_native,$(foreach object,$(CXXOBJECTS),$(call gb_CxxObject_get_target,$(object))) \
+	    $(call gb_Helper_convert_native,\
+		$(foreach object,$(CXXOBJECTS),$(call gb_CxxObject_get_target,$(object))) \
 		$(foreach object,$(GENCXXOBJECTS),$(call gb_GenCxxObject_get_target,$(object))) \
 		$(foreach object,$(COBJECTS),$(call gb_CObject_get_target,$(object))) \
+		$(foreach object,$(GENCOBJECTS),$(call gb_GenCObject_get_target,$(object))) \
+		$(foreach object,$(ASMOBJECTS),$(call gb_AsmObject_get_target,$(object))) \
 		$(PCHOBJS))) && \
 	$(if $(DLLTARGET), echo EXPORTS >> $(DLLDEF) &&) \
 	$(if $(DLLTARGET), emxexp @$${RESPONSEFILE} | fix_exp_file | sort | uniq | fix_def_ord >> $(DLLDEF) &&) \
@@ -322,6 +344,7 @@ $(call gb_Helper_abbreviate_dirs_native,\
 		$(if $(filter Library,$(TARGETTYPE)),$(gb_Library_TARGETTYPEFLAGS)) \
 		$(if $(filter StaticLibrary,$(TARGETTYPE)),$(gb_StaticLibrary_TARGETTYPEFLAGS)) \
 		$(if $(filter Executable,$(TARGETTYPE)),$(gb_Executable_TARGETTYPEFLAGS)) \
+		$(if $(VERSIONMAP),$(gb_Library_VERSIONMAPFLAG) $(VERSIONMAP)) \
 		$(T_LDFLAGS) \
 		@$${RESPONSEFILE} \
 		$(if $(DLLTARGET), $(DLLDEF)) \
@@ -343,6 +366,7 @@ $(call gb_Helper_abbreviate_dirs_native,\
 	RESPONSEFILE=`$(gb_MKTEMP)` && \
 	echo "$(foreach object,$(CXXOBJECTS),$(call gb_CxxObject_get_target,$(object))) \
 		$(foreach object,$(GENCXXOBJECTS),$(call gb_GenCxxObject_get_target,$(object))) \
+		$(foreach object,$(GENCOBJECTS),$(call gb_GenCObject_get_target,$(object))) \
 		$(foreach object,$(COBJECTS),$(call gb_CObject_get_target,$(object))) " > $${RESPONSEFILE} && \
 	$(gb_AR) cru\
 		$(1) \
@@ -361,6 +385,7 @@ endef
 
 gb_Library_DEFS := -D_DLL_
 gb_Library_TARGETTYPEFLAGS := -Zdll
+gb_Library_VERSIONMAPFLAG := -Wl,--version-script
 gb_Library_get_rpath :=
 
 gb_Library_SYSPRE := 
@@ -492,6 +517,9 @@ gb_Executable_TARGETTYPEFLAGS :=
 #-RELEASE -BASE:0x1b000000 -OPT:NOREF -INCREMENTAL:NO -DEBUG
 gb_Executable_get_rpath :=
 
+gb_InBuild_Library_Path := $(OUTDIR)/bin
+gb_Augment_Library_Path := PATH="$${PATH}:$(gb_InBuild_Library_Path)"
+
 define gb_Executable_Executable_platform
 #$(call gb_LinkTarget_set_auxtargets,$(2),\
 #	$(patsubst %.exe,%.pdb,$(call gb_LinkTarget_get_target,$(2))) \
@@ -523,6 +551,15 @@ $(call gb_JunitTest_get_target,$(1)) : DEFS := \
 	-Dorg.openoffice.test.arg.soffice="$$$${OOO_TEST_SOFFICE:-path:$(SRCDIR)/instsetoo_native/$(INPATH)/Apache_OpenOffice/installed/install/en-US/OpenOffice 4/program/soffice.exe}" \
     -Dorg.openoffice.test.arg.env=PATH \
     -Dorg.openoffice.test.arg.user=file:///$(call gb_JunitTest_get_userdir,$(1)) \
+
+endef
+
+
+# Ant class
+
+define gb_Ant_add_dependencies
+__ant_out:=$(shell $(gb_Ant_ANTCOMMAND) -Ddependencies.outfile=`cygpath -m $(WORKDIR)/Ant/$(1)/deps` -f `cygpath -m $(2)` dependencies)
+$$(eval $(foreach dep,$(shell cat $(WORKDIR)/Ant/$(1)/deps),$$(call gb_Ant_add_dependency,$(call gb_Ant_get_target,$(1)),$(shell cygpath -u $(dep)))))
 
 endef
 

@@ -26,17 +26,27 @@ $(eval $(call gb_Module_Module,ooo))
 $(eval $(call gb_Module_add_moduledirs,ooo,\
 	MathMLDTD \
 	UnoControls \
+	accessibility \
 	animations \
+	apple_remote \
+	autodoc \
 	automation \
 	avmedia \
 	basctl \
 	basebmp \
 	basegfx \
+	basic \
+	bean \
 	binaryurp \
+	bridges \
 	canvas \
+	codemaker \
 	comphelper \
 	configmgr \
+	cosv \
 	cppcanvas \
+	cppuhelper \
+	cpputools \
 	cui \
 	dbaccess \
 	drawinglayer \
@@ -48,46 +58,72 @@ $(eval $(call gb_Module_add_moduledirs,ooo,\
 	formula \
 	fpicker \
 	framework \
+	i18npool \
 	i18nutil \
 	idl \
+	idlc \
 	io \
 	javaunohelper \
+	jurt \
+	jvmaccess \
+	lingucomponent \
 	linguistic \
 	o3tl \
 	offapi \
 	oovbaapi \
 	oox \
-	padmin \
 	package \
-	reportdesign \
+	packimages \
+	padmin \
+	psprint_config \
+	pyuno \
+	qadevOOo \
+	rdbmaker \
+	registry \
 	remotebridges \
+	reportdesign \
+	ridljar \
+	rsc \
+	sane \
 	sax \
 	sc \
+	scaddins \
 	sccomp \
 	sd \
 	sfx2 \
 	slideshow \
+	solenv \
 	sot \
 	starmath \
+	store \
 	svgio \
 	svl \
 	svtools \
 	svx \
 	sw \
+	testgraphical \
 	toolkit \
 	tools \
+	twain \
+	ucb \
 	ucbhelper \
 	udkapi \
+	udm \
+	unixODBC \
+	unodevtools \
 	unotools \
 	unoxml \
+	ure \
 	uui \
 	vbahelper \
 	vcl \
-	udm \
+	vos \
 	wizards \
 	writerfilter \
 	x11_extensions \
+	xmerge \
 	xml2cmp \
+	xmlhelp \
 	xmloff \
 	xmlreader \
 	xmlscript \

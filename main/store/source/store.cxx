@@ -25,6 +25,7 @@
 #include "precompiled_store.hxx"
 
 #include "store/store.h"
+#include "store/dllapi.h"
 
 #include <sal/types.h>
 #include <rtl/memory.h>

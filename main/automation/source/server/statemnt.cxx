@@ -92,7 +92,7 @@
 
 using namespace com::sun::star::frame;
 using namespace com::sun::star::uno;
-//using namespace com::sun::star::util; geht wegen Color nicht
+//using namespace com::sun::star::util; can't be done because of Color
 using namespace com::sun::star::beans;
 using namespace svt;
 //using namespace svt::table;
@@ -155,7 +155,7 @@ StatementFlow::StatementFlow( sal_uLong nServiceId, SCmdStream *pCmdIn, ImplRemo
 	if( nParams & PARAM_USHORT_1 )  pCmdIn->Read( nSNr1 );
 	if( nParams & PARAM_ULONG_1 )   pCmdIn->Read( nLNr1 );
 	if( nParams & PARAM_STR_1 )     pCmdIn->Read( aString1 );
-	if( nParams & PARAM_BOOL_1 )    pCmdIn->Read( bBool1 );	// sollte nie auftreten!!
+	if( nParams & PARAM_BOOL_1 )    pCmdIn->Read( bBool1 );	// should never occur!!
 
 #if OSL_DEBUG_LEVEL > 1
 	m_pDbgWin->AddText( "Reading FlowControl: " );
@@ -182,12 +182,12 @@ void StatementFlow::SendViaSocket()
 	bSending = sal_True;
 	if ( pCommLink )
 	{
-		if ( !pCommLink->TransferDataStream( pRet->GetStream() ) )	// tritt ein Fehler auf, so wird sofort gelöscht ...
+		if ( !pCommLink->TransferDataStream( pRet->GetStream() ) )	// If an error occurs, it is deleted immediately. ...
 			pCommLink = NULL;
 	}
 	else
 	{
-		// Macht nix. Wenn das Basic nicht mehr da ist, ist sowiso alles egal
+		// It doesn't matter if there is no basic core for the testtool.
 		DBG_ERROR("Cannot send results to TestTool");
 	}
 
@@ -210,16 +210,16 @@ sal_Bool StatementFlow::Execute()
 
 			if ( !bUseIPC )
 			{
-				// bBool1 wurde im CTOR auf sal_False initialisiert
-				if ( !bBool1 )	// also erster Durchlauf
+				// bBool1 was initialized to sal_False in CTOR
+				if ( !bBool1 )	// so first run
 				{
 					pRemoteControl->pRetStream = pRet->GetStream();
-					bBool1 = sal_True;	// wurde im CTOR auf sal_False initialisiert
+					bBool1 = sal_True;	// was initialized to sal_False in CTOR
 					nRetryCount = nRetryCount * 4;
 				}
-				if ( pRemoteControl->pRetStream && (nRetryCount--) )	// also solange nicht abgeholt
+				if ( pRemoteControl->pRetStream && (nRetryCount--) )	// unless you picked up it.
 				{
-					return sal_False;	// Bitte einmal vom Callstack runter
+					return sal_False;	// Please get off the call stack once.
 				}
 			}
 
@@ -232,7 +232,7 @@ sal_Bool StatementFlow::Execute()
 	{
 	case F_EndCommandBlock:
 		if ( !bUseIPC )
-		{	// wird oben abgehandelt
+		{	// is discussed above
 			pRet->Reset();
 			IsError = sal_False;
 		}
@@ -263,7 +263,7 @@ sal_Bool StatementFlow::Execute()
 
 // -=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
 
-// neue Hilfsfunktion, die stetig erweitert werden muss
+// new auxiliary function, which must be constantly extended
 static short ImpGetRType( Window *pWin )
 {
 	short nRT = C_NoType;
@@ -323,7 +323,7 @@ static short ImpGetRType( Window *pWin )
 
 		case WINDOW_PATTERNBOX:			nRT = C_PatternBox;		break;
 		case WINDOW_TOOLBOX:			nRT = C_ToolBox;		break;
-// Gibts nicht       case WINDOW_VALUESET:			nRT = C_ValueSet;		break;
+// Doesn't exist       case WINDOW_VALUESET:			nRT = C_ValueSet;		break;
 		case WINDOW_CONTROL:			nRT = C_Control;		break;
 		case WINDOW_OKBUTTON:			nRT = C_OkButton;		break;
 		case WINDOW_CANCELBUTTON:		nRT = C_CancelButton;	break;
@@ -657,10 +657,10 @@ sal_Bool StatementSlot::Execute()
     }
 
 
-/*	Neues Verfahren ab 334!
-	Neue Methode zum einstellen, daß Modale Dialoge immer Asynchron aufgerufen werden
-	und echter Returnwert, ob Slot geklappt hat
-	und Testen ob Slot überhaupt durch UI aufgerufen werden kann        */
+/*	New method from the line 334!
+	New method for setting that modal dialogs are always called asynchronously
+	and a real return value, whether slot has worked  
+	and testing whether slot can be called by UI at all       */
 
 
 	SendProfile( SlotString( nFunctionId ) );
@@ -770,7 +770,7 @@ StatementCommand::StatementCommand( SCmdStream *pCmdIn )
 		m_pDbgWin->AddText( "*Deleting all Commands:\n" );
 		#endif
 		bReadingCommands = sal_False;
-		while ( StatementList::pFirst != this ) // Alles Löschen außer mich selbst
+		while ( StatementList::pFirst != this ) // Delete everything except myself
 		{
 			StatementList *pDeQue = StatementList::pFirst;
 			pDeQue->Advance();
@@ -800,7 +800,7 @@ void StatementCommand::WriteControlData( Window *pBase, sal_uLong nConf, sal_Boo
             pBase = pBase->GetParent();
     }
 
-	{	// Klammerung, so daß der String nicht während der Rekursion bestehen bleibt
+	{	// KParentheses, so that the string does not persist during recursion.
 		String aName;
 		sal_Bool bSkip = sal_False;
 
@@ -905,7 +905,7 @@ void StatementCommand::WriteControlData( Window *pBase, sal_uLong nConf, sal_Boo
 			    TypeString(pBase->GetType()).Append(aTypeSuffix).AppendAscii(": ").Append(aName), sal_False );
 
 
-			if ( pBase->GetType() == WINDOW_TOOLBOX )	// Buttons und Controls auf Toolboxen.
+			if ( pBase->GetType() == WINDOW_TOOLBOX )	// Buttons and Controls in Toolboxes.
 			{
 				ToolBox *pTB = ((ToolBox*)pBase);
 				sal_uInt16 i;
@@ -980,11 +980,11 @@ void StatementCommand::WriteControlData( Window *pBase, sal_uLong nConf, sal_Boo
 					}
 				}
 
-				return;	// ToolBox ist hier schon komplett abgehandelt.
+				return;	// ToolBox is already completely covered here..
 			}
 
 
-			if ( pBase->GetType() == WINDOW_BUTTONDIALOG	// Buttons auf Buttondialogen mit ID
+			if ( pBase->GetType() == WINDOW_BUTTONDIALOG	// Buttons on button dialogs with ID
 				|| pBase->GetType() == WINDOW_MESSBOX
 				|| pBase->GetType() == WINDOW_INFOBOX
 				|| pBase->GetType() == WINDOW_WARNINGBOX
@@ -1024,12 +1024,12 @@ void StatementCommand::WriteControlData( Window *pBase, sal_uLong nConf, sal_Boo
 							break;
 					}
 
-					pRet->GenReturn ( RET_WinInfo, aID, (comm_ULONG)pBD->GetPushButton( pBD->GetButtonId(i) )->GetType(),	// So daß der Text angezeigt wird!
+					pRet->GenReturn ( RET_WinInfo, aID, (comm_ULONG)pBD->GetPushButton( pBD->GetButtonId(i) )->GetType(),	// so the text is displayed!
 						TypeString(pBD->GetPushButton( pBD->GetButtonId(i) )->GetType()).AppendAscii(": ").Append(aName)
 						.AppendAscii(" ButtonId = ").AppendAscii( aID.GetBuffer() ), sal_False );
 				}
 
-				return;	// ButtonDialog ist hier schon komplett abgehandelt.
+				return;	// ButtonDialog is already completely covered here.
 			}
 
 
@@ -1081,7 +1081,7 @@ void StatementCommand::WriteControlData( Window *pBase, sal_uLong nConf, sal_Boo
 					}
 				}
 
-				return;	// Menu ist hier schon komplett abgehandelt.
+				return;	// Menu is already completely covered here
 			}
 		}
 	}
@@ -4700,8 +4700,7 @@ sal_Bool StatementControl::Execute()
 
 /*  leads to problems because settext sets the text whereas typekeys adds to the text.
         if ( bDoTypeKeysDelay && nMethodId == M_SetText && ( nParams & PARAM_STR_1 ) )
-		{	// Hier wird das Statement auf ein TypeKeys umgebogen
-			nMethodId = M_TypeKeys;
+		{	// Here the statement is bent to a TypeKeys
 			nParams = PARAM_BOOL_1 | PARAM_STR_1;
 			bBool1 = sal_True;
 			pControl->GrabFocus();
@@ -4745,7 +4744,7 @@ sal_Bool StatementControl::Execute()
 							pRet->GenReturn ( RET_Value, aUId, Id2Str( ((TabControl*)pControl)->GetTabPage(((TabControl*)pControl)->GetCurPageId())->GetUniqueOrHelpId() ) );
 							break;
 						case M_SetPage :
-							{		// Wegen lokaler Variablen
+							{		// Due to local variables
 								TabControl *pTControl = ((TabControl*)pControl);
 								sal_uInt16 nActive = pTControl->GetCurPageId();
 								sal_uInt16 i,anz;
@@ -4776,7 +4775,7 @@ sal_Bool StatementControl::Execute()
 									i++;
 									if ( i >= pTControl->GetPageCount() )
 										i = 0;
-									if ( !MaybeDoTypeKeysDelay( pTControl ) || !MaybeDoTypeKeysDelay( pTControl ) || !MaybeDoTypeKeysDelay( pTControl ) )	// 3 Mal aufrufen
+									if ( !MaybeDoTypeKeysDelay( pTControl ) || !MaybeDoTypeKeysDelay( pTControl ) || !MaybeDoTypeKeysDelay( pTControl ) )	// Call up 3 times
 										break;
 								}
 								if ( !aID.equals( aWantedID ) )
@@ -4975,7 +4974,7 @@ sal_Bool StatementControl::Execute()
 											if ( bUnselectBeforeSelect )
 												pLB->SetNoSelection();
 											pLB->SelectEntryPos( nPos, bBool1 );
-											if ( pLB->IsEntryPosSelected( nPos ) ? !bBool1 : bBool1 )	// XOR rein mit BOOL
+											if ( pLB->IsEntryPosSelected( nPos ) ? !bBool1 : bBool1 )	// XOR into with BOOL
 												ReportError( aUId, GEN_RES_STR2( S_METHOD_FAILED, MethodString( nMethodId ), aString1 ) );
 										}
 									}
@@ -4988,7 +4987,7 @@ sal_Bool StatementControl::Execute()
 											if ( bUnselectBeforeSelect )
 												pLB->SetNoSelection();
 											pLB->SelectEntryPos( nNr1-1, bBool1 );
-											if ( pLB->IsEntryPosSelected( nNr1-1 ) ? !bBool1 : bBool1 )	// XOR rein mit BOOL
+											if ( pLB->IsEntryPosSelected( nNr1-1 ) ? !bBool1 : bBool1 )	// XOR into with BOOL
 												ReportError( aUId, GEN_RES_STR2( S_METHOD_FAILED, MethodString( nMethodId ), UniString::CreateFromInt32( nNr1 ) ) );
 										}
 									}
@@ -5232,7 +5231,7 @@ sal_Bool StatementControl::Execute()
 						if ( !aUId.equals( pTB->GetUniqueOrHelpId() ) )	// So we found a Button on the ToolBox
 						{
 							if ( (nParams == PARAM_NONE) || (nParams == PARAM_USHORT_1) )
-							{			// Wir fälschen einen Parameter
+							{			// We fake a parameter
 							    nParams |= PARAM_STR_1;
                                 aString1 = Id2Str( aUId );
 							}
@@ -5303,7 +5302,7 @@ sal_Bool StatementControl::Execute()
 							case M_Click :
 								{
                                     FIND_ITEM;
-									if ( bItemFound )	// FIND_ITEM Erfolgreich
+									if ( bItemFound )	// FIND_ITEM successfull
 									{
 										Rectangle aRect = pTB->GetItemRect(pTB->GetItemId(nItemPos));
                                         if ( aRect.IsEmpty() )
@@ -5334,7 +5333,7 @@ sal_Bool StatementControl::Execute()
 							case M_TearOff :
 								{
                                     FIND_ITEM;
-									if ( bItemFound )	// FIND_ITEM Erfolgreich
+									if ( bItemFound )	// FIND_ITEM successful
 									{
 										Rectangle aRect = pTB->GetItemPosDropDownRect( nItemPos );
 										AnimateMouse( pControl, aRect.Center() );
@@ -5343,13 +5342,13 @@ sal_Bool StatementControl::Execute()
 
 										Window *pWin = NULL;
 										// Wait for the window to open.
-										StatementList::bExecuting = sal_True;		// Bah ist das ein ekliger Hack
-										{											// Das verhindert, daß schon der nächste Befehl ausgeführt wird.
+										StatementList::bExecuting = sal_True;		// Bah, that's a nasty hack.
+										{											// This prevents the next command from being executed.
 											Time aDelay;
 											while ( !pWin && ( (pWin = GetPopupFloatingWin()) == NULL ) && ( Time() - aDelay ).GetSec() < 15 )
 												SafeReschedule();
 										}
-										StatementList::bExecuting = sal_False;	// Bah ist das ein ekliger Hack
+										StatementList::bExecuting = sal_False;	// Bah, that's a nasty hack.
 
 										if ( pWin && pWin->GetType() == WINDOW_FLOATINGWINDOW )
 										{
@@ -5377,7 +5376,7 @@ sal_Bool StatementControl::Execute()
 										ImplMouseButtonDown( pTB, aMEvnt);
 										ImplMouseButtonUp( pTB, aMEvnt);
 
-                                        // Das Fenster ist offen.
+                                        // T.
 				                        aSubMenuId1 = 0;
 				                        aSubMenuId2 = 0;
 				                        aSubMenuId3 = 0;
@@ -5388,7 +5387,7 @@ sal_Bool StatementControl::Execute()
 							case _M_IsEnabled:
 								{
                                     FIND_ITEM;
-									if ( bItemFound )	// FIND_ITEM Erfolgreich
+									if ( bItemFound )	// FIND_ITEM successful
 									{
 										pRet->GenReturn ( RET_Value, aUId, pTB->IsItemEnabled( pTB->GetItemId(nItemPos) ) );
 									}
@@ -5397,7 +5396,7 @@ sal_Bool StatementControl::Execute()
 							case M_GetState :
 								{
                                     FIND_ITEM;
-									if ( bItemFound )	// FIND_ITEM Erfolgreich
+									if ( bItemFound )	// FIND_ITEM successful
 									{
                                         if ( ValueOK( aUId, CUniString("GetState"), nNr1, 4 ) )
 								            switch (nNr1)
@@ -5480,7 +5479,7 @@ sal_Bool StatementControl::Execute()
 						    case M_IsMax:
 						    case M_Minimize:
 						    case M_Maximize:
-						    case M_Help:		// Alles was unten weiterbehandelt werden soll
+						    case M_Help:		// Everything to be treated below
                                 goto DockingWin;
 							default:
 								ReportError( aUId, GEN_RES_STR2c2( S_UNKNOWN_METHOD, MethodString(nMethodId), "ToolBox" ) );
@@ -6385,7 +6384,7 @@ protected:
 							else
 								ReportError( aUId, GEN_RES_STR1( S_ALLOWED_ONLY_IN_DOCKING_MODE, MethodString( nMethodId ) ) );
 							break;
-						case M_Help:		// Alles was unten weiterbehandelt werden soll
+						case M_Help:		// Everything to be treated below
 							goto MoreDialog;
 
 						default:
@@ -6433,7 +6432,7 @@ protected:
 							SET_WINP_CLOSING(pControl);
 							((FloatingWindow*)pControl)->Close();
 							break;
-						case M_Help:		// Alles was unten weiterbehandelt werden soll
+						case M_Help:		// Everything to be treated below
 						case M_Move:
 							goto MoreDialog;
 						default:
@@ -6537,7 +6536,7 @@ protected:
                             ((WorkWindow*)pControl)->Maximize( sal_False );
                             ((WorkWindow*)pControl)->Restore();
                             break;
-						case M_Help:		// Alles was unten weiterbehandelt werden soll
+						case M_Help:		// Everything to be treated below
 							goto MoreDialog;
 						default:
 							ReportError( aUId, GEN_RES_STR2c2( S_UNKNOWN_METHOD, MethodString(nMethodId), "WorkWindow" ) );

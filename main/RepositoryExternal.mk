@@ -274,11 +274,11 @@ endef
 else # !SYSTEM_GRAPHITE
 
 $(eval $(call gb_Helper_register_static_libraries,PLAINLIBS, \
-    graphite \
+	graphite \
 ))
 define gb_LinkTarget__use_graphite
 $(call gb_LinkTarget_add_linked_static_libs,$(1),\
-    graphite \
+	graphite \
 )
 endef
 
@@ -287,6 +287,12 @@ endif # SYSTEM_GRAPHITE
 
 ifeq ($(SYSTEM_ICU),YES)
 
+define gb_LinkTarget__use_icudata
+$(call gb_LinkTarget_add_libs,$(1),-licudata)
+endef
+define gb_LinkTarget__use_icui18n
+$(call gb_LinkTarget_add_libs,$(1),-licui18n)
+endef
 define gb_LinkTarget__use_icule
 $(call gb_LinkTarget_add_libs,$(1),-licule)
 endef
@@ -296,20 +302,48 @@ endef
 
 else # !SYSTEM_ICU
 
-$(eval $(call gb_Helper_register_libraries,PLAINLIBS_OOO, \
-	icule \
-	icuuc \
-))
+define gb_LinkTarget__use_icudata
+ifeq ($(OS)$(COM),WNTMSC)
+$(call gb_LinkTarget_add_libs,$(1),icudata.lib)
+else ifeq ($(OS)$(COM),WNTGCC)
+$(call gb_LinkTarget_add_libs,$(1),-licudt40)
+else ifeq ($(OS),OS2)
+$(call gb_LinkTarget_add_libs,$(1),-licudt)
+else
+$(call gb_LinkTarget_add_libs,$(1),-licudata)
+endif
+endef
+
+define gb_LinkTarget__use_icui18n
+ifeq ($(OS)$(COM),WNTMSC)
+$(call gb_LinkTarget_add_libs,$(1),icuin.lib)
+else ifeq ($(OS)$(COM),WNTGCC)
+$(call gb_LinkTarget_add_libs,$(1),-licuin40)
+else ifeq ($(OS),OS2)
+$(call gb_LinkTarget_add_libs,$(1),-licuin)
+else
+$(call gb_LinkTarget_add_libs,$(1),-licui18n)
+endif
+endef
 
 define gb_LinkTarget__use_icule
-$(call gb_LinkTarget_add_linked_libs,$(1),\
-	icule \
-)
+ifeq ($(OS)$(COM),WNTMSC)
+$(call gb_LinkTarget_add_libs,$(1),icule.lib)
+else ifeq ($(OS)$(COM),WNTGCC)
+$(call gb_LinkTarget_add_libs,$(1),-licule40)
+else
+$(call gb_LinkTarget_add_libs,$(1),-licule)
+endif
 endef
+
 define gb_LinkTarget__use_icuuc
-$(call gb_LinkTarget_add_linked_libs,$(1),\
-	icuuc \
-)
+ifeq ($(OS)$(COM),WNTMSC)
+$(call gb_LinkTarget_add_libs,$(1),icuuc.lib)
+else ifeq ($(OS)$(COM),WNTGCC)
+$(call gb_LinkTarget_add_libs,$(1),-licuuc40)
+else
+$(call gb_LinkTarget_add_libs,$(1),-licuuc)
+endif
 endef
 
 endif # SYSTEM_ICU
@@ -329,13 +363,13 @@ else # !SYSTEM_OPENSSL
 
 ifeq ($(OS),WNT)
 $(eval $(call gb_Helper_register_libraries,PLAINLIBS_OOO, \
-    crypto \
-    ssl \
+	crypto \
+	ssl \
 ))
 else
 $(eval $(call gb_Helper_register_static_libraries,PLAINLIBS, \
-    crypto \
-    ssl \
+	crypto \
+	ssl \
 ))
 endif
 
@@ -366,12 +400,12 @@ ifeq ($(SYSTEM_APR),YES)
 
 define gb_LinkTarget__use_apr
 $(call gb_LinkTarget_add_defs,$(1),\
-        -DSYSTEM_APR \
+		-DSYSTEM_APR \
 )
 $(call gb_LinkTarget_set_include,$(1),\
 	$$(INCLUDE) \
 	$(APR_CFLAGS) \
-)       
+)
 $(call gb_LinkTarget_add_libs,$(1),$(APR_LIBS))
 endef
 
@@ -535,6 +569,7 @@ $(call gb_LinkTarget_set_include,$(1),\
 )
 $(call gb_LinkTarget_add_linked_libs,$(1),CoinMP)
 ifneq ($(OS),WNT)
+ifneq ($(OS),OS2)
 $(call gb_LinkTarget_add_linked_libs,$(1),\
 	CoinUtils \
 	Clp \
@@ -545,8 +580,157 @@ $(call gb_LinkTarget_add_linked_libs,$(1),\
 	CbcSolver \
 )
 endif
+endif
 endef
 
 endif # SYSTEM_COINMP
+
+
+ifeq ($(SYSTEM_HYPH),YES)
+
+define gb_LinkTarget__use_hyphen
+$(call gb_LinkTarget_add_defs,$(1),\
+		-DSYSTEM_HYPH \
+)
+$(call gb_LinkTarget_add_libs,$(1),$(HYPHEN_LIB))
+endef
+
+else # !SYSTEM_HYPH
+
+$(eval $(call gb_Helper_register_static_libraries,PLAINLIBS, \
+		hyphen \
+))
+
+define gb_LinkTarget__use_hyphen
+$(call gb_LinkTarget_add_linked_static_libs,$(1),\
+		hyphen \
+)
+endef
+
+endif # SYSTEM_HYPH
+
+
+ifeq ($(SYSTEM_LIBTEXTCAT),YES)
+
+define gb_LinkTarget__use_libtextcat
+$(call gb_LinkTarget_add_libs,$(1),-ltextcat)
+endef
+
+else # !SYSTEM_LIBTEXTCAT
+
+$(eval $(call gb_Helper_register_libraries,PLAINLIBS_OOO, \
+	libtextcat \
+	textcat \
+))
+
+define gb_LinkTarget__use_libtextcat
+ifeq ($(OS),WNT)
+$(call gb_LinkTarget_add_linked_libs,$(1),libtextcat)
+else
+$(call gb_LinkTarget_add_linked_libs,$(1),textcat)
+endif
+endef
+
+endif # SYSTEM_LIBTEXTCAT
+
+
+ifeq ($(SYSTEM_MYTHES),YES)
+
+define gb_LinkTarget__use_mythes
+$(call gb_LinkTarget_set_include,$(1),\
+	$$(INCLUDE) \
+	$(MYTHES_CFLAGS) \
+)
+$(call gb_LinkTarget_add_libs,$(1),$(MYTHES_LIBS))
+endef
+
+else # !SYSTEM_MYTHES
+
+ifeq ($(OS),WNT)
+$(eval $(call gb_Helper_register_static_libraries,PLAINLIBS,libmythes))
+else
+$(eval $(call gb_Helper_register_static_libraries,PLAINLIBS,mythes-1.2))
+endif
+
+define gb_LinkTarget__use_mythes
+ifeq ($(OS),WNT)
+$(call gb_LinkTarget_add_linked_static_libs,$(1),libmythes)
+else
+$(call gb_LinkTarget_add_linked_static_libs,$(1),mythes-1.2)
+endif
+endef
+
+endif # SYSTEM_MYTHES
+
+
+ifeq ($(SYSTEM_HUNSPELL),YES)
+
+define gb_LinkTarget__use_hunspell
+$(call gb_LinkTarget_set_include,$(1),\
+		$$(INCLUDE) \
+		$(HUNSPELL_CFLAGS) \
+)
+$(call gb_LinkTarget_add_libs,$(1),$(HUNSPELL_LIBS))
+endef
+
+else # !SYSTEM_HUNSPELL
+
+ifeq ($(GUI),WNT)
+$(eval $(call gb_Helper_register_static_libraries,PLAINLIBS,libhunspell))
+else ifeq ($(GUI),OS2)
+$(eval $(call gb_Helper_register_static_libraries,PLAINLIBS,hunspell))
+else
+$(eval $(call gb_Helper_register_static_libraries,PLAINLIBS,hunspell-1.3))
+endif
+
+define gb_LinkTarget__use_hunspell
+$(call gb_LinkTarget_set_include,$(1),\
+	$$(INCLUDE) \
+	-I$(OUTDIR)/inc/hunspell \
+)
+$(call gb_LinkTarget_add_defs,$(1),\
+	-DHUNSPELL_STATIC
+)
+ifeq ($(GUI),WNT)
+$(call gb_LinkTarget_add_linked_static_libs,$(1),libhunspell)
+else ifeq ($(GUI),OS2)
+$(call gb_LinkTarget_add_linked_static_libs,$(1),hunspell)
+else
+$(call gb_LinkTarget_add_linked_static_libs,$(1),hunspell-1.3)
+endif
+endef
+
+endif # SYSTEM_HUNSPELL
+
+
+
+ifeq ($(SYSTEM_PYTHON),YES)
+
+define gb_LinkTarget__use_python
+$(call gb_LinkTarget_set_include,$(1),\
+        $$(INCLUDE) \
+        $(filter -I%,$(PYTHON_CFLAGS)) \
+)
+$(call gb_LinkTarget_add_defs,$(1),\
+        $(filter-out -I%,$(PYTHON_CFLAGS)) \
+)
+$(call gb_LinkTarget_add_libs,$(1),\
+        $(PYTHON_LIBS) \
+)
+endef
+
+else # !SYSTEM_PYTHON
+
+include $(SRCDIR)/python/pyversion.mk
+
+define gb_LinkTarget__use_python
+$(call gb_LinkTarget_set_include,$(1),\
+        $$(INCLUDE) \
+        -I$(OUTDIR)/inc/python \
+)
+$(call gb_LinkTarget_add_libs,$(1),$(PYTHONLIB))
+endef
+
+endif # SYSTEM_PYTHON
 
 # vim: set noet sw=4 ts=4:

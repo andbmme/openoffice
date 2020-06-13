@@ -45,6 +45,12 @@ DEBFILES=$(foreach,i,{$(PRODUCTLIST)} $(PKGDIR)$/$i4.2-$(TARGET)-menus_$(PKGVERS
 
 .ENDIF
 
+.IF "$(FAKEROOT)"!="no"
+FAKEROOT2="$(FAKEROOT)"
+.ELSE
+FAKEROOT2="LD_PRELOAD=$(SOLARBINDIR)/getuid.so"
+.ENDIF
+
 # --- Targets -------------------------------------------------------
 
 .INCLUDE :  target.mk
@@ -57,7 +63,7 @@ ALLTAR : $(DEBFILES)
 %/DEBIAN/control : $$(@:f)
 	@$(MKDIRHIER) $(@:d) $*$/etc $*$/usr/share/applnk/Office $*$/usr/lib/menu
 	ln -sf /opt/$(UNIXFILENAME.$(*:f:s/-/ /:1:s/4.2//)) $*$/etc$/
-	/bin/sh -c -x "cd $(COMMONMISC)$/$(*:f:s/-/ /:1:s/4.2//) && DESTDIR=$(shell @cd $*; pwd) ICON_PREFIX=$(ICONPREFIX) KDEMAINDIR=/usr GNOMEDIR=/usr create_tree.sh"
+	/bin/sh -c -x "cd $(COMMONMISC)$/$(*:f:s/-/ /:1:s/4.2//) && DESTDIR=$(shell @cd $*; pwd) ICON_PREFIX=$(ICONPREFIX) KDEMAINDIR=/usr GNOMEDIR=/usr ./create_tree.sh"
         @cat openoffice.org-debian-menus | sed -e 's/%PRODUCTNAME/$(PRODUCTNAME.$(*:f:s/-/ /:1:s/4.2//)) $(PRODUCTVERSION.$(*:f:s/-/ /:1:s/4.2//))/' -e 's/%PREFIX/$(UNIXFILENAME.$(*:f:s/-/ /:1:s/4.2//))/' -e 's/%ICONPREFIX/$(ICONPREFIX.$(*:f:s/-/ /:1:s/4.2//))/' > $*$/usr/lib/menu/$(*:f:s/_/ /:1:s/4.2//)
 	echo "Package: $(*:f:s/_/ /:1:s/4.2//)" > $@
 	cat $(@:f) | tr -d "\015" | sed "s/%productname/$(PRODUCTNAME.$(*:f:s/-/ /:1:s/4.2//))/" >> $@
@@ -85,7 +91,7 @@ $(DEBFILES) : makefile.mk control postinst postrm prerm
 	@chmod a+rx $(MISC)$/$(@:b)$/DEBIAN $(MISC)/$(@:b)/DEBIAN/post* $(MISC)/$(@:b)/DEBIAN/pre*
 	@chmod g-s $(MISC)/$(@:b)/DEBIAN
 	@mkdir -p $(PKGDIR)
-	/bin/bash -c "LD_PRELOAD=$(SOLARBINDIR)/getuid.so dpkg-deb --build $(MISC)/$(@:b) $@" 
+	/bin/bash -c "$(FAKEROOT2) dpkg-deb --build $(MISC)/$(@:b) $@" 
 	$(RM) -r $(MISC)$/$(@:b)
 #	@chmod -R g+w $(MISC)/$(TARGET)/$(DEBFILE:f)
 

@@ -83,7 +83,7 @@ CPPUHELPERLIB=-luno_cppuhelper$(COMID)
 .ENDIF			# "$(GUI)$(COM)"=="WNTGCC"
 .INCLUDE .IGNORE : ucbhelper/version.mk
 .IF "$(GUI)"=="OS2"
-UCBHELPERLIB=-lucbh$(UCBHELPER_MAJOR)
+UCBHELPERLIB=-lucbhelper
 .ELSE
 UCBHELPERLIB=-lucbhelper$(COMID)
 .ENDIF
@@ -103,8 +103,7 @@ REGLIB=-lreg$(UDK_MAJOR)
 .ELSE			# "$(GUI)$(COM)"=="WNTGCC"
 REGLIB=-lreg
 .ENDIF			# "$(GUI)$(COM)"=="WNTGCC"
-.INCLUDE .IGNORE : vos/version.mk
-VOSLIB=-lvos$(VOS_MAJOR)$(COMID)
+VOSLIB=-lvos3$(COMID)
 XMLOFFLIB=-lxo$(DLLPOSTFIX)
 XMLOFFLLIB=-lxol
 .IF "$(GUI)$(COM)"=="WNTGCC" || "$(GUI)"=="OS2"

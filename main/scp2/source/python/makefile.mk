@@ -36,7 +36,7 @@ TARGETTYPE=CUI
 .IF "$(SYSTEM_PYTHON)" == "YES"
 SCPDEFS+=-DSYSTEM_PYTHON
 .ELSE
-.INCLUDE :      pyversion.mk
+.INCLUDE :      pyversion_dmake.mk
 .ENDIF
 
 SCPDEFS+=\

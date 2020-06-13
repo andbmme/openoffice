@@ -46,7 +46,6 @@ my_components = \
     reflection \
     stocservices \
     abp \
-    analysis \
     basprov \
     bib \
     calc \
@@ -58,6 +57,7 @@ my_components = \
     component/animations/source/animcore/animcore \
     component/avmedia/util/avmedia \
     component/basctl/util/basctl \
+    component/basic/util/sb \
     component/binaryurp/source/binaryurp \
     component/canvas/source/factory/canvasfactory \
     component/canvas/source/simplecanvas/simplecanvas \
@@ -82,16 +82,21 @@ my_components = \
     component/framework/util/fwk \
     component/framework/util/fwl \
     component/framework/util/fwm \
+    component/i18npool/util/i18npool \
+    component/i18npool/source/search/i18nsearch \
     component/io/source/acceptor/acceptor \
     component/io/source/connector/connector \
     component/io/source/stm/streams \
     component/io/source/TextInputStream/textinstream \
     component/io/source/TextOutputStream/textoutstream \
     component/javaunohelper/util/juh \
+    component/lingucomponent/source/languageguessing/guesslang \
+    component/lingucomponent/source/thesaurus/libnth/lnth \
     component/linguistic/source/lng \
     component/oox/util/oox \
     component/package/source/xstor/xstor \
     component/package/util/package2 \
+    component/pyuno/source/loader/pythonloader \
 	component/reportdesign/util/rptxml \
 	component/reportdesign/util/rpt \
 	component/reportdesign/util/rptui \
@@ -102,6 +107,8 @@ my_components = \
     component/sc/util/sc \
     component/sc/util/scd \
     component/sc/util/vbaobj \
+    component/scaddins/source/analysis/analysis \
+    component/scaddins/source/datefunc/date \
     component/sd/util/sd \
     component/sd/util/sdd \
     component/sfx2/util/sfx \
@@ -139,10 +146,11 @@ my_components = \
     component/unoxml/source/rdf/unordf \
     component/unoxml/source/service/unoxml \
     component/writerfilter/util/writerfilter \
+    component/xmlhelp/source/treeview/tvhlp1 \
+    component/xmlhelp/util/ucpchelp1 \
     component/xmloff/source/transform/xof \
     component/xmloff/util/xo \
     component/xmlscript/util/xcr \
-    date \
     dbase \
     dbp \
     dbpool2 \
@@ -154,10 +162,6 @@ my_components = \
     flash \
     flat \
     frm \
-    guesslang \
-    i18npool \
-    i18nsearch \
-    lnth \
     localebe1 \
     log \
 	mailmerge \
@@ -172,10 +176,8 @@ my_components = \
     placeware \
     preload \
     protocolhandler \
-    pythonloader \
     pythonscript \
     res \
-    sb \
     scn \
     scriptframe \
     sdbc2 \
@@ -184,8 +186,6 @@ my_components = \
     svgfilter \
     syssh \
     t602filter \
-    tvhlp1 \
-    ucpchelp1 \
     updatefeed \
     updchk \
     vbaevents \
@@ -228,11 +228,11 @@ my_components += XSLTFilter.jar \
 .END
 
 .IF "$(ENABLE_HYPHEN)" == "YES"
-my_components += hyphen
+my_components += component/lingucomponent/source/hyphenator/altlinuxhyph/hyphen/hyphen
 .END
 
 .IF "$(ENABLE_HUNSPELL)" == "YES"
-my_components += spell
+my_components += component/lingucomponent/source/spellcheck/spell/spell
 .END
 
 .IF "$(SYSTEM_LIBWPD)" == "YES"
@@ -275,10 +275,10 @@ my_components += component/slideshow/source/engine/OGLTrans/ogltrans
 
 .IF "$(SOLAR_JAVA)" == "TRUE"
 my_components += \
-    LuceneHelpWrapper \
+    component/xmlhelp/java/LuceneHelpWrapper/LuceneHelpWrapper \
     ScriptFramework \
     ScriptProviderForJava \
-    XMergeBridge \
+    component/xmerge/java/XMergeBridge/XMergeBridge \
     XSLTValidate \
     component/wizards/com/sun/star/wizards/agenda/agenda \
     component/wizards/com/sun/star/wizards/fax/fax \
@@ -313,16 +313,16 @@ my_components += \
 .IF "$(OS)" == "MACOSX"
 my_components += \
     component/avmedia/source/macavf/avmediaMacAVF \
-    component/avmedia/source/quicktime/avmediaQuickTime \
     component/fpicker/source/aqua/fps_aqua \
+    component/lingucomponent/source/spellcheck/macosxspell/MacOSXSpell \
     macab1 \
-    macbe1 \
-    MacOSXSpell
+    macbe1
 .END
 
 .IF "$(OS)" == "WNT"
 my_components += \
     ado \
+    component/accessibility/java/java_uno_accessbridge/java_uno_accessbridge \
     component/avmedia/source/win/avmediawin \
     component/dtrans/source/generic/dtrans \
     component/dtrans/util/dnd \
@@ -330,7 +330,6 @@ my_components += \
     component/dtrans/util/sysdtrans \
     component/fpicker/util/fop \
     component/fpicker/util/fps \
-    java_uno_accessbridge \
     sysmail \
     winaccessibility \
     wininetbe1
@@ -339,6 +338,7 @@ my_components += \
 .IF "$(OS)" == "OS2"
 my_components += \
     component/dtrans/source/generic/dtrans \
+    component/dtrans/util/dnd \
     component/dtrans/util/sysdtrans
 .END
 

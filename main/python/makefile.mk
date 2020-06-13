@@ -29,7 +29,7 @@ TARGET=so_python
 # --- Settings -----------------------------------------------------
 
 .INCLUDE :	settings.mk
-.INCLUDE :      pyversion.mk
+.INCLUDE :      pyversion_dmake.mk
 
 .IF "$(SYSTEM_PYTHON)" == "YES"
 all:
@@ -42,7 +42,7 @@ all:
 
 
 TARFILE_NAME=Python-$(PYVERSION)
-TARFILE_MD5=cee2e4b33ad3750da77b2e85f2f8b724
+TARFILE_MD5=27a7919fa8d1364bae766949aaa91a5b
 PATCH_FILES=\
 	python-solaris.patch \
 	python-freebsd.patch \
@@ -50,8 +50,21 @@ PATCH_FILES=\
 	python-ssl.patch \
 	python-solver-before-std.patch \
 	python-$(PYVERSION)-sysbase.patch \
-	python-$(PYVERSION)-nohardlink.patch \
-	python-$(PYVERSION)-pcbuild.patch
+	python-$(PYVERSION)-nohardlink.patch
+
+.IF "$(GUI)"=="WNT"
+.IF "$(CPUNAME)"=="INTEL"
+PATCH_FILES += python-$(PYVERSION)-msvs9.patch
+.ELIF "$(CPUNAME)"=="X86_64"
+PATCH_FILES += \
+	python-$(PYVERSION)-msvs9-win64.patch \
+	python-$(PYVERSION)-msvs9-win64-target.patch \
+	python-$(PYVERSION)-msvs9-subsystem.patch \
+	python-$(PYVERSION)-msvs9-dir.patch \
+	python-$(PYVERSION)-msvs9-no-host-python.patch \
+	python-$(PYVERSION)-msvs9-python-path.patch
+.ENDIF
+.ENDIF
 
 CONFIGURE_DIR=
 
@@ -83,7 +96,7 @@ BUILD_ACTION=$(ENV_BUILD) $(GNUMAKE) -j$(EXTMAXPROCESS) && $(GNUMAKE) install &&
 # WINDOWS
 # ----------------------------------
 .IF "$(COM)"=="GCC"
-PATCH_FILES=python-$(PYVERSION)-mingw.patch
+#PATCH_FILES=python-$(PYVERSION)-mingw.patch
 BUILD_DIR=
 MYCWD=$(shell cygpath -m $(shell @pwd))/$(INPATH)/misc/build
 python_CFLAGS=-mno-cygwin -mthreads
@@ -116,10 +129,15 @@ BUILD_DIR=PC/VS9.0
 # Build python executable and then runs a minimal script. Running the minimal script
 # ensures that certain *.pyc files are generated which would otherwise be created on
 # solver during registration in insetoo_native
+.IF "$(CPUNAME)"=="INTEL"
 BUILD_ACTION=$(COMPATH)$/vcpackages$/vcbuild.exe -useenv pcbuild.sln "Release|Win32"
+.ELIF "$(CPUNAME)"=="X86_64"
+BUILD_ACTION=$(COMPATH)$/vcpackages$/vcbuild.exe -useenv pcbuild.sln "Release|x64"
+.ENDIF
 .ENDIF
 .ENDIF
 
+PYVERSIONFILE_DMAKE=$(MISC)$/pyversion_dmake.mk
 PYVERSIONFILE=$(MISC)$/pyversion.mk
 
 # --- Targets ------------------------------------------------------
@@ -143,11 +161,14 @@ $(PYCONFIG) : $(MISC)$/build$/$(TARFILE_NAME)$/PC$/pyconfig.h
 .ENDIF
 .ENDIF
 
-ALLTAR : $(PYVERSIONFILE)
+ALLTAR : $(PYVERSIONFILE_DMAKE) $(PYVERSIONFILE)
 .ENDIF          # "$(L10N_framework)"==""
 
+
+$(PYVERSIONFILE_DMAKE) : pyversion_dmake.mk $(PACKAGE_DIR)$/$(PREDELIVER_FLAG_FILE)
+	-rm -f $@
+	cat $? > $@
 
 $(PYVERSIONFILE) : pyversion.mk $(PACKAGE_DIR)$/$(PREDELIVER_FLAG_FILE)
 	-rm -f $@
 	cat $? > $@
-

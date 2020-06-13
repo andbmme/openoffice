@@ -22,8 +22,8 @@ umask 022
 
 if [ "${KDEMAINDIR}" ]
 then
-  echo Copying icons .. 
-  for i in `cd ${ICON_SOURCE_DIR}; find ${ICON_THEMES:-hicolor/??x?? locolor} -name "*.png"`
+  echo Copying KDE icons...
+  for i in `cd ${ICON_SOURCE_DIR}; find ${ICON_THEMES:-hicolor/??x?? hicolor/???x??? locolor} -name "*.png"`
   do
     targetdir=${DESTDIR}/${KDEMAINDIR}/share/icons/`dirname $i`
     mkdir -p $targetdir
@@ -31,18 +31,18 @@ then
     cp ${ICON_SOURCE_DIR}/$i $destfile
     chmod 0644 $destfile
   done
-  
+
   mkdir -p ${DESTDIR}/${KDEMAINDIR}/share/mimelnk/application
   for i in `cat mimelnklist`; do
     cp $i ${DESTDIR}/${KDEMAINDIR}/share/mimelnk/application/${PREFIX}-$i
   done
-  chmod 0644 ${DESTDIR}/${KDEMAINDIR}/share/mimelnk/application/*  
+  chmod 0644 ${DESTDIR}/${KDEMAINDIR}/share/mimelnk/application/*
 fi
 
 if [ "${GNOMEDIR}" ]
 then
-  echo Copying GNOME icons ..
-  for i in `cd ${ICON_SOURCE_DIR}/hicolor; find ??x?? -name "*.png"`
+  echo Copying GNOME icons...
+  for i in `cd ${ICON_SOURCE_DIR}/hicolor; find ??x?? ???x??? -name "*.png"`
   do
     targetdir=${DESTDIR}/${GNOMEDIR}/share/icons/gnome/`dirname $i`
     mkdir -p $targetdir
@@ -50,7 +50,7 @@ then
     cp ${ICON_SOURCE_DIR}/hicolor/$i $destfile
     chmod 0644 $destfile
   done
-  
+
   mkdir -p ${DESTDIR}/${GNOMEDIR}/share/mime-info
   cp openoffice.mime ${DESTDIR}/${GNOMEDIR}/share/mime-info/${PREFIX}.mime
   cp openoffice.keys ${DESTDIR}/${GNOMEDIR}/share/mime-info/${PREFIX}.keys
@@ -61,9 +61,9 @@ then
   chmod 0644 ${DESTDIR}/${GNOMEDIR}/share/application-registry/${PREFIX}.*
 
   if [ "${GNOME_MIME_THEME}" ]
-  then 
-    echo "Creating legacy mimetype symlinks for GNOME .."
-    # add symlinks so that nautilus can identify the mime-icons 
+  then
+    echo "Creating legacy mimetype symlinks for GNOME..."
+    # add symlinks so that nautilus can identify the mime-icons
     # not strictly freedesktop-stuff but there is no common naming scheme yet.
     # One proposal is "mime-application:vnd.oasis.opendocument.spreadsheet.png"
     # for e.g. application/vnd.oasis.opendocument.spreadsheet
@@ -72,7 +72,7 @@ then
     then
       link_target_root="${DESTDIR}/${GNOMEDIR}/share/icons/gnome"
     fi
-      
+
     for subdir in `cd ${link_target_root}; ls -d *`
     do
       link_target_dir=""
@@ -80,7 +80,7 @@ then
       if [ ! -d "${link_dir}" ]
       then
         mkdir -p "${link_dir}"
-	link_target_dir="../../../gnome/$subdir/mimetypes/"
+    link_target_dir="../../../gnome/$subdir/mimetypes/"
       fi
       ln -sf $link_target_dir${ICON_PREFIX:-}${ICON_PREFIX:+-}drawing.png                     ${link_dir}/gnome-mime-application-vnd.sun.xml.draw.png
       ln -sf $link_target_dir${ICON_PREFIX:-}${ICON_PREFIX:+-}drawing-template.png            ${link_dir}/gnome-mime-application-vnd.sun.xml.draw.template.png

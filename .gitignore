@@ -8,6 +8,7 @@
 *.bak
 *.cxx-*
 *.git
+*.gnuplot
 *.hxx-*
 *.log
 *.orig
@@ -21,8 +22,11 @@
 *.DS_Store
 
 # configure autoconf related
+/main/FreeBSD*Env.Set*
 /main/Linux*Env.Set*
 /main/MacOS*Env.Set*
+/main/OS2*Env.Set*
+/main/ant.properties
 /main/autom4te.cache
 /main/config.guess
 /main/config.log
@@ -43,6 +47,7 @@
 CVS
 TAGS
 \#*
+/log
 
 # id-utils, ctags, cscope
 /ID
@@ -55,8 +60,12 @@ TAGS
 /*/cscope.po.out
 
 # externals
-/main/external/unowinreg/unowinreg.dll
+/main/external/dbghelp/*
+/main/external/gdiplus/*
 /main/external/msvcp90/*
+/main/external/msvcp100/*
+/main/external/unowinreg/unowinreg.dll
+/main/external/vcredist/*
 
 # $INPATH output directories
 /*/*/unxlng??
@@ -69,3 +78,9 @@ TAGS
 /*/*/unxso???.pro
 /*/*/unxmac??
 /*/*/unxmac??.pro
+
+# Windows Accessibility Bridge
+main/winaccessibility/source/UAccCOMIDL/dlldata.c
+
+# RepoRevision hash file
+/main/solenv/inc/reporevision.lst

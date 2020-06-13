@@ -72,17 +72,12 @@ gb_OSDEFS := \
 	-DWIN32 \
 	-DWNT \
 
-ifeq ($(GXX_INCLUDE_PATH),)
-GXX_INCLUDE_PATH=$(COMPATH)/include/c++/$(shell gcc -dumpversion)
-endif
-
 gb_COMPILERDEFS := \
 	-DGCC \
 	-D$(CVER) \
 	-DCVER=$(CVER) \
 	-DGLIBC=2 \
-	-DGXX_INCLUDE_PATH=$(GXX_INCLUDE_PATH) \
-	-DCPPU_ENV=gcc3 \
+	-DCPPU_ENV=$(COMNAME) \
 	-D_MT \
 	-D_NATIVE_WCHAR_T_DEFINED \
 	-D_MSC_EXTENSIONS \
@@ -92,8 +87,8 @@ ifeq ($(USE_MINGW),cygwin-w64-mingw32)
 gb_COMPILERDEFS +=-D_declspec=__declspec
 endif
 
-gb_CPUDEFS := \
-	-DINTEL \
+gb_CPUDEFS := -D$(ALIGN) -D$(CPUNAME)
+gb_CPUDEFS += \
 	-D_M_IX86 \
 
 gb_RCDEFS := \
@@ -221,6 +216,25 @@ $(patsubst $(OUTDIR)%,$(gb_Helper_OUTDIR_NATIVE)%, \
 $(patsubst $(WORKDIR)%,$(gb_Helper_WORKDIR_NATIVE)%, \
 $(patsubst $(SRCDIR)%,$(gb_Helper_SRCDIR_NATIVE)%, \
 $(1)))))
+endef
+
+# AsmObject class
+
+gb_AsmObject_EXT := .s
+
+define gb_AsmObject__command
+$(call gb_Output_announce,$(2),$(true),ASM,3)
+$(call gb_Helper_abbreviate_dirs,\
+	mkdir -p $(dir $(1)) && \
+	$(gb_CC) \
+		$(DEFS) \
+		$(T_CFLAGS) \
+		$(CFLAGS) \
+		-c $(3) \
+		-o $(1) \
+		-MT $(1) \
+		-I$(dir $(3)) \
+		$(INCLUDE))
 endef
 
 # CObject class
@@ -386,6 +400,7 @@ $(call gb_Helper_abbreviate_dirs_native,\
 	mkdir -p $(dir $(1)) && \
 	RESPONSEFILE=`$(gb_MKTEMP)` && \
 	echo "$(foreach object,$(CXXOBJECTS),$(call gb_CxxObject_get_target,$(object))) \
+		$(foreach object,$(GENCOBJECTS),$(call gb_GenCObject_get_target,$(object))) \
 		$(foreach object,$(GENCXXOBJECTS),$(call gb_GenCxxObject_get_target,$(object))) \
 		$(foreach object,$(COBJECTS),$(call gb_CObject_get_target,$(object))) \
 		$(NATIVERES) " > $${RESPONSEFILE} && \
@@ -410,7 +425,10 @@ $(call gb_Helper_abbreviate_dirs_native,\
 	mkdir -p $(dir $(1)) && \
 	rm -f $(1) && \
 	RESPONSEFILE=`$(gb_MKTEMP)` && \
-	echo "$(foreach object,$(CXXOBJECTS),$(call gb_CxxObject_get_target,$(object))) \
+	echo "\
+		$(foreach object,$(ASMXXOBJECTS),$(call gb_AsmObject_get_target,$(object))) \
+		$(foreach object,$(CXXOBJECTS),$(call gb_CxxObject_get_target,$(object))) \
+		$(foreach object,$(GENCOBJECTS),$(call gb_GenCObject_get_target,$(object))) \
 		$(foreach object,$(GENCXXOBJECTS),$(call gb_GenCxxObject_get_target,$(object))) \
 		$(foreach object,$(COBJECTS),$(call gb_CObject_get_target,$(object))) \
 		$(NATIVERES) " > $${RESPONSEFILE} && \
@@ -436,6 +454,7 @@ $(call gb_Helper_abbreviate_dirs_native,\
 	RESPONSEFILE=`$(gb_MKTEMP)` && \
 	echo "$(foreach object,$(CXXOBJECTS),$(call gb_CxxObject_get_target,$(object))) \
 		$(foreach object,$(GENCXXOBJECTS),$(call gb_GenCxxObject_get_target,$(object))) \
+		$(foreach object,$(GENCOBJECTS),$(call gb_GenCObject_get_target,$(object))) \
 		$(foreach object,$(COBJECTS),$(call gb_CObject_get_target,$(object))) " > $${RESPONSEFILE} && \
 	$(gb_AR) -rsu\
 		$(1) \
@@ -600,6 +619,9 @@ gb_Executable_get_rpath :=
 gb_Executable_Executable_platform =
 gb_Executable_TARGETGUI :=
 
+gb_InBuild_Library_Path := $(OUTDIR)/bin
+gb_Augment_Library_Path := PATH="$${PATH}:$(gb_InBuild_Library_Path)"
+
 # GoogleTest class
 
 gb_GoogleTest_GTESTPRECOMMAND := PATH="$${PATH}:$(OUTDIR)/bin"
@@ -615,6 +637,15 @@ $(call gb_JunitTest_get_target,$(1)) : DEFS := \
 	-Dorg.openoffice.test.arg.soffice="$$$${OOO_TEST_SOFFICE:-path:$(SRCDIR)/instsetoo_native/$(INPATH)/Apache_OpenOffice/installed/install/en-US/OpenOffice 4/program/soffice.exe}" \
     -Dorg.openoffice.test.arg.env=PATH \
     -Dorg.openoffice.test.arg.user=file:///$(call gb_JunitTest_get_userdir,$(1)) \
+
+endef
+
+
+# Ant class
+
+define gb_Ant_add_dependencies
+__ant_out:=$(shell $(gb_Ant_ANTCOMMAND) -Ddependencies.outfile=`cygpath -m $(WORKDIR)/Ant/$(1)/deps` -f `cygpath -m $(2)` dependencies)
+$$(eval $(foreach dep,$(shell cat $(WORKDIR)/Ant/$(1)/deps),$$(call gb_Ant_add_dependency,$(call gb_Ant_get_target,$(1)),$(shell cygpath -u $(dep)))))
 
 endef
 

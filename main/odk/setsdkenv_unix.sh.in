@@ -159,12 +159,6 @@ case ${sdk_platform} in
     ;;
 
   darwin*)
-    if [ -n "$OO_SDK_CPP_HOME" ]
-    then
-	SDK_GXX_INCLUDE_PATH=`echo "#include <cstring>" | ${OO_SDK_CPP_HOME}/clang++ -E -xc++ - | sed -n '/.*1*"\(.*\)\/cstring".*/s//\1/p' | head -n 1`
-	export SDK_GXX_INCLUDE_PATH
-    fi	
-
     directoryname=macosx
     comid=s5abi
     soext=dylib
@@ -172,16 +166,12 @@ case ${sdk_platform} in
     platform=MacOSX
     stldebug=_stldebug
     DYLD_LIBRARY_PATH=/usr/lib:${OO_SDK_OUT}/${directoryname}/lib:${OO_SDK_OUT}/${exampleout}/lib:${OO_SDK_OFFICE_LIB_DIR}:.:${DYLD_LIBRARY_PATH}
+    # Below for https://bz.apache.org/ooo/show_bug.cgi?id=127965
+    PATH=${PATH}:/usr/local/bin
     export DYLD_LIBRARY_PATH
     ;;
 
   linux-gnu)
-    if [ -n "$OO_SDK_CPP_HOME" ]
-    then
-	SDK_GXX_INCLUDE_PATH=`echo "#include <cstring>" | ${OO_SDK_CPP_HOME}/g++ -E -xc++ - | sed -n '/.*1*"\(.*\)\/cstring".*/s//\1/p' | head -n 1`
-	export SDK_GXX_INCLUDE_PATH
-    fi	
-
     directoryname=linux
     comid=gcc3
     soext=so
@@ -193,12 +183,6 @@ case ${sdk_platform} in
     ;;
 
   freebsd*)
-    if [ -n "$OO_SDK_CPP_HOME" ]
-    then
-	SDK_GXX_INCLUDE_PATH=`echo "#include <cstring>" | ${OO_SDK_CPP_HOME}/g++ -E -xc++ - | sed -n '/.*1*"\(.*\)\/cstring".*/s//\1/p' | head -n 1`
-	export SDK_GXX_INCLUDE_PATH
-    fi	
-
     directoryname=freebsd
     comid=gcc3
     soext=so
@@ -300,27 +284,42 @@ then
 #    Only necessary on MacOSX, on other Unix systems the links are already prepared
 #    in the SDK installation.
 
-#    cleanup potential old links first
-    rm -f "${OO_SDK_OUT}/${directoryname}/lib/libuno_cppu.${soext}" \
-	"${OO_SDK_OUT}/${directoryname}/lib/libuno_cppuhelper${comid}.${soext}" \
-	"${OO_SDK_OUT}/${directoryname}/lib/libuno_sal.${soext}" \
-	"${OO_SDK_OUT}/${directoryname}/lib/libuno_salhelper${comid}.${soext}" \
-	"${OO_SDK_OUT}/${directoryname}/lib/libuno_purpenvhelper${comid}.${soext}"
-
 #    prepare links 
     if [ "${OFFICE_HOME}" ]
     then
 	mkdir -p "${OO_SDK_OUT}/${directoryname}/lib"
-	ln -s "${OO_SDK_OFFICE_LIB_DIR}/libuno_cppu.${soext}.3" \
+	ln -shf "${OO_SDK_OFFICE_LIB_DIR}/libuno_cppu.${soext}" \
 	    "${OO_SDK_OUT}/${directoryname}/lib/libuno_cppu.${soext}"
-	ln -s "${OO_SDK_OFFICE_LIB_DIR}/libuno_cppuhelper${comid}.${soext}.3" \
+	ln -shf "${OO_SDK_OFFICE_LIB_DIR}/libuno_cppuhelper${comid}.${soext}" \
 	    "${OO_SDK_OUT}/${directoryname}/lib/libuno_cppuhelper${comid}.${soext}"
-	ln -s "${OO_SDK_OFFICE_LIB_DIR}/libuno_sal.${soext}.3" \
+	ln -shf "${OO_SDK_OFFICE_LIB_DIR}/libuno_sal.${soext}" \
 	    "${OO_SDK_OUT}/${directoryname}/lib/libuno_sal.${soext}"
-	ln -s "${OO_SDK_OFFICE_LIB_DIR}/libuno_salhelper${comid}.${soext}.3" \
+	ln -shf "${OO_SDK_OFFICE_LIB_DIR}/libuno_salhelper${comid}.${soext}" \
 	    "${OO_SDK_OUT}/${directoryname}/lib/libuno_salhelper${comid}.${soext}"
-	ln -s "${OO_SDK_OFFICE_LIB_DIR}/libuno_purpenvhelper${comid}.${soext}.3" \
+	ln -shf "${OO_SDK_OFFICE_LIB_DIR}/libuno_purpenvhelper${comid}.${soext}" \
 	    "${OO_SDK_OUT}/${directoryname}/lib/libuno_purpenvhelper${comid}.${soext}"
+
+	ln -shf "${OO_SDK_OFFICE_LIB_DIR}/libuno_cppu.${soext}" \
+	    "${OO_SDK_OUT}/${directoryname}/lib/libuno_cppu.${soext}.3"
+	ln -shf "${OO_SDK_OFFICE_LIB_DIR}/libuno_cppuhelper${comid}.${soext}" \
+	    "${OO_SDK_OUT}/${directoryname}/lib/libuno_cppuhelper${comid}.${soext}.3"
+	ln -shf "${OO_SDK_OFFICE_LIB_DIR}/libuno_sal.${soext}" \
+	    "${OO_SDK_OUT}/${directoryname}/lib/libuno_sal.${soext}.3"
+	ln -shf "${OO_SDK_OFFICE_LIB_DIR}/libuno_salhelper${comid}.${soext}" \
+	    "${OO_SDK_OUT}/${directoryname}/lib/libuno_salhelper${comid}.${soext}.3"
+	ln -shf "${OO_SDK_OFFICE_LIB_DIR}/libuno_purpenvhelper${comid}.${soext}" \
+	    "${OO_SDK_OUT}/${directoryname}/lib/libuno_purpenvhelper${comid}.${soext}.3"
+
+	ln -shf "${OO_SDK_OFFICE_LIB_DIR}/libuno_cppu.${soext}" \
+	    "${OO_SDK_OFFICE_LIB_DIR}/libuno_cppu.${soext}.3"
+	ln -shf "${OO_SDK_OFFICE_LIB_DIR}/libuno_cppuhelper${comid}.${soext}" \
+	    "${OO_SDK_OFFICE_LIB_DIR}/libuno_cppuhelper${comid}.${soext}.3"
+	ln -shf "${OO_SDK_OFFICE_LIB_DIR}/libuno_sal.${soext}" \
+	    "${OO_SDK_OFFICE_LIB_DIR}/libuno_sal.${soext}.3"
+	ln -shf "${OO_SDK_OFFICE_LIB_DIR}/libuno_salhelper${comid}.${soext}" \
+	    "${OO_SDK_OFFICE_LIB_DIR}/libuno_salhelper${comid}.${soext}.3"
+	ln -shf "${OO_SDK_OFFICE_LIB_DIR}/libuno_purpenvhelper${comid}.${soext}" \
+	    "${OO_SDK_OFFICE_LIB_DIR}/libuno_purpenvhelper${comid}.${soext}.3"
 
     fi
 fi 
@@ -343,6 +342,14 @@ echo " * Java = $OO_SDK_JAVA_HOME"
 echo " * Boost = $OO_SDK_BOOST_HOME"
 echo " * SDK Output directory = $OO_SDK_OUT"
 echo " * Auto deployment = $SDK_AUTO_DEPLOYMENT"
+echo " *"
+echo " * PATH = $PATH"
+if [ "${platform}" = "MacOSX" ]
+then
+    echo " * DYLD_LIBRARY_PATH = $DYLD_LIBRARY_PATH"
+else
+    echo " * LD_LIBRARY_PATH = $LD_LIBRARY_PATH"
+fi
 echo " *"
 echo " ************************************************************************"
 

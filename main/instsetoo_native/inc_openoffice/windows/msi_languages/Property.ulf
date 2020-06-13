@@ -23,13 +23,10 @@
 en-US = "Comment in the Add-Remove-Programs Applet"
 
 [OOO_ARPCONTACTTEMPLATE]
-en-US = "Department for technical support"
+en-US = "Apache Software Foundation"
 
 [OOO_ARPHELPLINKTEMPLATE]
 en-US = "https://www.openoffice.org"
-
-[OOO_ARPHELPTELEPHONETEMPLATE]
-en-US = "x-xxx-xxx-xxx"
 
 [OOO_ARPURLINFOABOUTTEMPLATE]
 en-US = "https://www.openoffice.org"

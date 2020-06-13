@@ -29,7 +29,7 @@ ENABLE_EXCEPTIONS=TRUE
 NO_BSYMBOLIC=TRUE
 USE_DEFFILE=TRUE
 
-.IF "$(OS)" != "WNT" && "$(GUI)"!="OS2"
+.IF "$(OS)" != "WNT" && "$(GUI)"!="OS2" && "$(OS)" != "MACOSX"
 UNIXVERSIONNAMES=UDK
 .ENDIF # WNT
 
@@ -64,6 +64,8 @@ DEF1NAME=	$(SHL1TARGET)
 
 .IF "$(COMNAME)"=="msci"
 SHL1VERSIONMAP=msci.map
+.ELIF "$(COMNAME)"=="mscx"
+SHL1VERSIONMAP=mscx.map
 .ELIF "$(GUI)"=="OS2"
 SHL1VERSIONMAP=gcc3os2.map
 .ELIF "$(COMNAME)"=="sunpro5"

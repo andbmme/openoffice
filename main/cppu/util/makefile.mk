@@ -28,7 +28,7 @@ USE_DEFFILE=TRUE
 ENABLE_EXCEPTIONS=TRUE
 NO_BSYMBOLIC=TRUE
 
-.IF "$(OS)" != "WNT" && "$(OS)" != "OS2"
+.IF "$(OS)" != "WNT" && "$(OS)" != "OS2" && "$(OS)" != "MACOSX"
 UNIXVERSIONNAMES=UDK
 .ENDIF
 
@@ -70,6 +70,8 @@ SHL2TARGET  := $(NAMEpurpenv_helper)
 DEF2NAME    := $(SHL2TARGET)
 .IF "$(GUI)$(COM)"=="WNTGCC"
 SHL2VERSIONMAP:=uno_purpenvhelper$(COMID).map
+.ELIF "$(GUI)$(COM)"=="WNTMSC"
+SHL2VERSIONMAP:=$(SHL2TARGET)$(CPU).map
 .ELIF "$(GUI)"=="OS2"
 SHL2VERSIONMAP:=uno_purpenvhelperwntgcc.map
 .ELSE

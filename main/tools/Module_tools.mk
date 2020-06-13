@@ -37,6 +37,7 @@ $(eval $(call gb_Module_add_targets,tools,\
 ifeq ($(ENABLE_UNIT_TESTS),YES)
 $(eval $(call gb_Module_add_check_targets,tools,\
 	GoogleTest_tools_fractiontest \
+	GoogleTest_tools_pathutils \
 ))
 endif
 

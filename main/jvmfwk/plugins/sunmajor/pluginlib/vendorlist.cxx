@@ -22,7 +22,7 @@
 
 
 // MARKER(update_precomp.py): autogen include statement, do not remove
-#include "precompiled_jvmfwk.hxx"
+#include "precompiled_plugin.hxx"
 
 #include "vendorlist.hxx"
 #include "gnujre.hxx"
@@ -51,6 +51,8 @@ BEGIN_VENDOR_MAP()
     VENDOR_MAP_ENTRY("BEA Systems, Inc.", OtherInfo)
     VENDOR_MAP_ENTRY("Free Software Foundation, Inc.", GnuInfo)
     VENDOR_MAP_ENTRY("The FreeBSD Foundation", OtherInfo)
+    VENDOR_MAP_ENTRY("AdoptOpenJDK", OtherInfo)
+    VENDOR_MAP_ENTRY("OpenJDK", SunInfo)
 END_VENDOR_MAP()    
 
 

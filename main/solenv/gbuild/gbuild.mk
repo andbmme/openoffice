@@ -36,7 +36,6 @@
 # SOLARLIB
 # UPD
 
-# GXX_INCLUDE_PATH (Linux)
 # PTHREAD_CFLAGS (Linux)
 # SYSTEM_ICU (Linux)
 # SYSTEM_JPEG (Linux)
@@ -118,6 +117,8 @@ gb_FULLDEPS := $(false)
 else
 gb_FULLDEPS := $(true)
 endif
+
+gb_UDK_MAJOR := 3
 
 include $(GBUILDDIR)/Helper.mk
 include $(GBUILDDIR)/TargetLocations.mk
@@ -215,6 +216,11 @@ ifeq ($(strip $(ENABLE_GRAPHITE)),TRUE)
 gb_GLOBALDEFS += -DENABLE_GRAPHITE
 endif
 
+# Required for correct Windows function call ABI for expat static library
+ifeq ($(SYSTEM_EXPAT),NO)
+gb_GLOBALDEFS += -DXML_STATIC
+endif
+
 gb_GLOBALDEFS := $(sort $(gb_GLOBALDEFS))
 
 include $(GBUILDDIR)/Deliver.mk
@@ -253,6 +259,7 @@ include $(foreach class, \
 	CustomTarget \
 	PrecompiledHeaders \
 	GoogleTest \
+	Ant \
 	Jar \
 	JavaClassSet \
 	JunitTest \

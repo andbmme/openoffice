@@ -26,7 +26,7 @@
 gb_ComponentTarget_get_outdir_target = $(OUTDIR)/xml/component/$(1).component
 gb_ComponentTarget_get_outdir_inbuild_target = $(OUTDIR)/xml/component/$(1).inbuild.component
 gb_Executable_get_target = $(OUTDIR)/bin/$(1)$(gb_Executable_EXT)
-gb_PackagePart_get_destinations = $(OUTDIR)/xml $(OUTDIR)/inc $(OUTDIR)/bin $(OUTDIR)/idl $(OUTDIR)/pck
+gb_PackagePart_get_destinations = $(OUTDIR)/xml $(OUTDIR)/inc $(OUTDIR)/bin $(OUTDIR)/lib $(OUTDIR)/idl $(OUTDIR)/pck
 gb_PackagePart_get_target = $(OUTDIR)/$(1)
 gb_ResTarget_get_outdir_imagelist_target = $(OUTDIR)/res/img/$(1).ilst
 gb_ResTarget_get_outdir_target = $(OUTDIR)/bin/$(1).res
@@ -45,6 +45,9 @@ endef
 # workdir target patterns
 
 gb_AllLangResTarget_get_target = $(WORKDIR)/AllLangRes/$(1)
+gb_Ant_get_target = $(WORKDIR)/Ant/$(1).jar
+gb_AsmObject_get_target = $(WORKDIR)/AsmObject/$(1).o
+gb_BisonTarget_get_target = $(WORKDIR)/Bison/$(1)/$(2).cxx
 gb_CObject_get_target = $(WORKDIR)/CObject/$(1).o
 gb_ComponentTarget_get_target = $(WORKDIR)/ComponentTarget/$(1).component
 gb_ComponentTarget_get_inbuild_target = $(WORKDIR)/ComponentTarget/$(1).inbuild.component
@@ -52,9 +55,11 @@ gb_CustomTarget_get_repo_target = $(WORKDIR)/CustomTarget/$(2)_$(1).done
 gb_CustomTarget_get_target = $(WORKDIR)/CustomTarget/$(1).done
 gb_CustomTarget_get_workdir = $(WORKDIR)/CustomTarget/$(1)
 gb_CxxObject_get_target = $(WORKDIR)/CxxObject/$(1).o
+gb_GenCObject_get_target = $(WORKDIR)/GenCObject/$(1).o
 gb_GenCxxObject_get_target = $(WORKDIR)/GenCxxObject/$(1).o
 gb_Executable_get_external_headers_target = $(WORKDIR)/ExternalHeaders/Executable/$(1)
 gb_Executable_get_headers_target = $(WORKDIR)/Headers/Executable/$(1)
+gb_FlexTarget_get_target = $(WORKDIR)/Flex/$(1)/$(2).cxx
 gb_GoogleTest_get_target = $(WORKDIR)/GoogleTest/$(1).test
 gb_Jar_get_target = $(WORKDIR)/Jar/$(1).jar
 gb_Jar_get_classsetname = Jar/$(1)
@@ -71,11 +76,14 @@ gb_UnoApiTarget_get_target = $(WORKDIR)/UnoApiTarget/$(1).rdb
 gb_UnoApiOutTarget_get_target = $(OUTDIR)/bin/$(1).rdb
 gb_UnoApiPartTarget_get_target = $(WORKDIR)/UnoApiPartTarget/$(1)
 gb_UnoApiTarget_get_header_target = $(WORKDIR)/UnoApiHeaders/$(1)
+gb_UnoPrivateApiTarget_get_target = $(WORKDIR)/UnoPrivateApi/$(1)
+gb_UnoPrivateApiExtractTarget_get_target = $(WORKDIR)/UnoPrivateApiExtract/$(1)
 gb_Module_get_check_target = $(WORKDIR)/Module/check/$(1)
 gb_Module_get_subsequentcheck_target = $(WORKDIR)/Module/subsequentcheck/$(1)
 gb_Module_get_target = $(WORKDIR)/Module/$(1)
 gb_NoexPrecompiledHeader_get_dep_target = $(WORKDIR)/Dep/NoexPrecompiledHeader/$(gb_NoexPrecompiledHeader_DEBUGDIR)/$(1).hxx.pch.d
 gb_NoexPrecompiledHeader_get_target = $(WORKDIR)/NoexPrecompiledHeader/$(gb_NoexPrecompiledHeader_DEBUGDIR)/$(1).hxx.pch
+gb_ObjCObject_get_target = $(WORKDIR)/ObjCObject/$(1).o
 gb_ObjCxxObject_get_target = $(WORKDIR)/ObjCxxObject/$(1).o
 gb_Package_get_preparation_target = $(WORKDIR)/Package/prepared/$(1)
 gb_Package_get_target = $(WORKDIR)/Package/$(1)
@@ -109,6 +117,7 @@ endef
 
 $(eval $(call gb_Helper_make_clean_targets,\
 	AllLangResTarget \
+	Ant \
 	ComponentTarget \
 	JavaClassSet \
 	Jar \
@@ -139,7 +148,9 @@ $(eval $(call gb_Helper_make_outdir_clean_targets,\
 $(eval $(call gb_Helper_make_dep_targets,\
 	CObject \
 	CxxObject \
+	ObjCObject \
 	ObjCxxObject \
+	GenCObject \
 	GenCxxObject \
 	LinkTarget \
 	SrsPartTarget \

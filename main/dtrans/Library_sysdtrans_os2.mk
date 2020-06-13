@@ -21,32 +21,37 @@
 
 
 
-$(eval $(call gb_Library_Library,sysdtran))
+$(eval $(call gb_Library_Library,sysdtrans))
 
-$(eval $(call gb_Library_add_precompiled_header,sysdtran,$(SRCDIR)/dtrans/inc/pch/precompiled_dtrans))
+$(eval $(call gb_Library_add_precompiled_header,sysdtrans,$(SRCDIR)/dtrans/inc/pch/precompiled_dtrans))
 
-$(eval $(call gb_Library_set_componentfile,sysdtran,dtrans/util/sysdtrans))
+$(eval $(call gb_Library_set_componentfile,sysdtrans,dtrans/util/sysdtrans))
 
-$(eval $(call gb_Library_set_include,sysdtran,\
+$(eval $(call gb_Library_set_include,sysdtrans,\
         $$(INCLUDE) \
 	-I$(SRCDIR)/dtrans/inc/pch \
 ))
 
-$(eval $(call gb_Library_add_api,sysdtran,\
+$(eval $(call gb_Library_add_api,sysdtrans,\
 	offapi \
 	udkapi \
 ))
 
-$(eval $(call gb_Library_add_linked_libs,sysdtran,\
+$(eval $(call gb_Library_add_linked_libs,sysdtrans,\
 	cppuhelper \
 	cppu \
 	sal \
 	stl \
-	UClip \
+	uclip \
 	$(gb_STDLIBS) \
 ))
 
-$(eval $(call gb_Library_add_exception_objects,sysdtran,\
+# YD FIXME this is not working... needs ldflags hack...
+$(eval $(call gb_Library_add_libs,sysdtrans,\
+    -luclip \
+))
+
+$(eval $(call gb_Library_add_exception_objects,sysdtrans,\
 	dtrans/source/os2/clipb/Os2Clipboard \
 	dtrans/source/os2/clipb/Os2Bitmap \
 	dtrans/source/os2/clipb/Os2Service \

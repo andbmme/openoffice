@@ -49,8 +49,21 @@ define gb_Output_warn
 $(warning $(NEWLINE)[ WARN  $(2) ] !!!$(NEWLINE)[ WARN  $(2) ] !!! $(1)$(NEWLINE)[ WARN  $(2) ] !!!)
 endef
 
+# env variables names are uppercase only
+ifeq ($(OS),OS2)
+gb_COLOR = $(GB_COLOR)
+gb_TITLES = $(GB_TITLES)
+endif
+
+# disable for OS/2
+ifneq ($(OS),OS2)
+# We can't use $(gb_AWK) here since that is defined in the platform files,
+# which are not included yet.  Reordering the includes causes other
+# problems.  Fortunately hardcoding awk works everywhere except Solaris.
 gb_Output_ESCAPE := $(shell echo|awk 'BEGIN { printf "%c", 27 }' -)
 gb_Output_BELL := $(shell echo|awk 'BEGIN { printf "%c", 7 }' -)
+endif
+
 
 # only enable colorized output if
 # - gb_COLOR is set
